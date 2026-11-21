@@ -1,0 +1,12 @@
+# 核心影像與 USB 通訊套件
+pillow>=10.0
+numpy>=1.24
+pyusb>=1.2.1
+psutil>=5.9
+
+# 雙屏 Web Studio 伺服器
+flask>=3.0
+
+# Windows 進階功能（媒體播放卡片 & 硬體感測器）
+winsdk>=1.0.0b10; sys_platform == "win32"
+pythonnet>=3.0; sys_platform == "win32"
