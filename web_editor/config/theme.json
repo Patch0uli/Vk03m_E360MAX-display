@@ -1,0 +1,39 @@
+{
+  "canvas_bg": "#120a05",
+  "card_bg": "#241208",
+  "card_opacity": 0.92,
+  "card_border": "#7c2d12",
+  "card_border_opacity": 1.0,
+  "text_primary": "#fff9b8",
+  "text_secondary": "#fdba74",
+  "cpu_accent": "#f59e0b",
+  "ram_accent": "#d97706",
+  "gpu_accent": "#e36b2b",
+  "status_accent": "#fbbf24",
+  "bg_image": null,
+  "bg_dim": 0.0,
+  "bg_blur": 0,
+  "rotate": 270,
+  "fps": 15.0,
+  "sync_to_screen": true,
+  "ambient_fx": "off",
+  "ambient_opacity": 0.65,
+  "ambient_speed": 1.0,
+  "widgets": [
+    {
+      "id": "gpu",
+      "x": 0,
+      "w": 1
+    },
+    {
+      "id": "ram",
+      "x": 1,
+      "w": 1
+    },
+    {
+      "id": "music",
+      "x": 2,
+      "w": 1
+    }
+  ]
+}

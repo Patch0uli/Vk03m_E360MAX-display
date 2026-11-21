@@ -1,0 +1,2200 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dual-Screen Display Studio // VK03M 960×360 & 銀欣 E360MAX 480×480</title>
+  <!-- Tailwind CSS & DaisyUI CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- GridStack.js (方案 A: 視覺化拖曳與拉寬合併) -->
+  <link href="https://cdn.jsdelivr.net/npm/gridstack@10.3.1/dist/gridstack.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/gridstack@10.3.1/dist/gridstack-extra.min.css" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/gridstack@10.3.1/dist/gridstack-all.js"></script>
+
+  <style>
+    body {
+      background-color: #060911;
+      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      overflow-x: hidden;
+    }
+    /* GridStack 3 欄自適應定位與防塌陷規則 */
+    .grid-stack.gs-3 > .grid-stack-item,
+    .grid-stack.grid-stack-3 > .grid-stack-item,
+    #widgetGrid > .grid-stack-item {
+      width: 33.333333%;
+    }
+    .grid-stack.gs-3 > .grid-stack-item[gs-x="0"],
+    .grid-stack.grid-stack-3 > .grid-stack-item[gs-x="0"],
+    #widgetGrid > .grid-stack-item[gs-x="0"] {
+      left: 0%;
+    }
+    .grid-stack.gs-3 > .grid-stack-item[gs-x="1"],
+    .grid-stack.grid-stack-3 > .grid-stack-item[gs-x="1"],
+    #widgetGrid > .grid-stack-item[gs-x="1"] {
+      left: 33.333333%;
+    }
+    .grid-stack.gs-3 > .grid-stack-item[gs-x="2"],
+    .grid-stack.grid-stack-3 > .grid-stack-item[gs-x="2"],
+    #widgetGrid > .grid-stack-item[gs-x="2"] {
+      left: 66.666667%;
+    }
+    .grid-stack.gs-3 > .grid-stack-item[gs-w="1"],
+    .grid-stack.grid-stack-3 > .grid-stack-item[gs-w="1"],
+    #widgetGrid > .grid-stack-item[gs-w="1"] {
+      width: 33.333333%;
+    }
+    .grid-stack.gs-3 > .grid-stack-item[gs-w="2"],
+    .grid-stack.grid-stack-3 > .grid-stack-item[gs-w="2"],
+    #widgetGrid > .grid-stack-item[gs-w="2"] {
+      width: 66.666667%;
+    }
+    .grid-stack.gs-3 > .grid-stack-item[gs-w="3"],
+    .grid-stack.grid-stack-3 > .grid-stack-item[gs-w="3"],
+    #widgetGrid > .grid-stack-item[gs-w="3"] {
+      width: 100%;
+    }
+
+    /* GridStack 卡片樣式（允許下拉選單自然溢出不被截斷） */
+    .grid-stack-item {
+      z-index: 1;
+    }
+    .grid-stack-item:hover,
+    .grid-stack-item:focus-within {
+      z-index: 40 !important;
+    }
+    .grid-stack-item-content {
+      background: rgba(15, 23, 42, 0.88) !important;
+      border: 1px solid rgba(56, 189, 248, 0.35) !important;
+      border-radius: 12px !important;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+      cursor: grab;
+      overflow: visible !important;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .grid-stack-item-content:active {
+      cursor: grabbing;
+    }
+    .grid-stack-item-content:hover {
+      border-color: rgba(56, 189, 248, 0.85) !important;
+      box-shadow: 0 0 18px rgba(56, 189, 248, 0.3);
+    }
+    .grid-stack .ui-resizable-e {
+      width: 16px !important;
+      right: 0 !important;
+      top: 0 !important;
+      bottom: 0 !important;
+      cursor: ew-resize !important;
+      background: linear-gradient(to right, transparent, rgba(56, 189, 248, 0.35)) !important;
+      border-top-right-radius: 12px;
+      border-bottom-right-radius: 12px;
+    }
+    /* 懸浮毛玻璃面板：底層粒子波浪可自然透出光芒 */
+    .glass-card {
+      background: rgba(13, 20, 36, 0.72);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glass-header {
+      background: rgba(10, 15, 29, 0.82);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .card-preview-box {
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.12);
+    }
+    input[type="color"] {
+      -webkit-appearance: none;
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      cursor: pointer;
+      background: transparent;
+    }
+    input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+    input[type="color"]::-webkit-color-swatch { border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; }
+    input[type="range"] { accent-color: #0284c7; }
+    select.select {
+      background-image: none !important;
+      padding-right: 0.5rem !important;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .preset-card.active, .aio-mode-card.active {
+      border-color: #38bdf8 !important;
+      background-color: rgba(14, 165, 233, 0.18) !important;
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.3);
+    }
+    .screen-tab-btn.active {
+      background: linear-gradient(135deg, rgba(14, 165, 233, 0.25), rgba(56, 189, 248, 0.15));
+      border-color: rgba(56, 189, 248, 0.75);
+      color: #f8fafc;
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.22);
+    }
+    .aio-pump-bezel {
+      box-shadow:
+        0 0 0 10px #0f172a,
+        0 0 0 12px rgba(56, 189, 248, 0.32),
+        0 24px 60px rgba(0, 0, 0, 0.8);
+    }
+  </style>
+</head>
+<body class="h-screen overflow-hidden flex flex-col relative select-none bg-[#080c14]">
+
+  <!-- 頂部導航欄 (z-30) -->
+  <header class="glass-header shrink-0 z-30 px-5 py-2.5 flex flex-wrap items-center justify-between gap-3">
+    <div class="flex items-center space-x-3 min-w-0">
+      <div class="w-9 h-9 shrink-0 rounded-xl bg-sky-500/20 border border-sky-400/50 flex items-center justify-center text-sky-400 shadow-lg shadow-sky-500/20">
+        <i class="fa-solid fa-display text-lg"></i>
+      </div>
+      <div class="min-w-0">
+        <h1 class="font-bold text-lg lg:text-base tracking-wide flex items-center space-x-2 truncate">
+          <span>DUAL DISPLAY STUDIO</span>
+          <span id="headerResBadge" class="badge badge-sm badge-info font-mono text-sm px-2 py-0.5 font-bold shrink-0">960×360</span>
+        </h1>
+        <p class="text-sm text-slate-400 truncate">VK03M 機箱副屏 & 銀欣 E360MAX 480×480 雙屏控制台</p>
+      </div>
+    </div>
+
+    <!-- 中央：雙屏切換器 -->
+    <div class="flex items-center p-1 rounded-xl bg-slate-900/80 border border-slate-700/80 space-x-1">
+      <button id="tabBtn-chassis" onclick="switchScreenTab('chassis')" class="screen-tab-btn active px-3.5 py-1.5 rounded-lg border border-transparent text-base font-medium text-slate-300 hover:text-white transition flex items-center space-x-2 whitespace-nowrap">
+        <span id="tabDot-chassis" class="w-2 h-2 rounded-full bg-amber-400"></span>
+        <i class="fa-solid fa-tv text-sm text-sky-400"></i>
+        <span>機箱副屏 960×360</span>
+      </button>
+      <button id="tabBtn-aio" onclick="switchScreenTab('aio')" class="screen-tab-btn px-3.5 py-1.5 rounded-lg border border-transparent text-base font-medium text-slate-300 hover:text-white transition flex items-center space-x-2 whitespace-nowrap">
+        <span id="tabDot-aio" class="w-2 h-2 rounded-full bg-amber-400"></span>
+        <i class="fa-solid fa-snowflake text-sm text-cyan-400"></i>
+        <span>銀欣 E360MAX 480×480</span>
+      </button>
+    </div>
+
+    <!-- 右側狀態與主操作按鈕 -->
+    <div class="flex items-center space-x-2.5 shrink-0">
+      <!-- 硬體連線狀態徽章 -->
+      <div id="statusBadge" class="flex items-center space-x-2 px-3 py-1.5 rounded-full bg-slate-900/80 border border-slate-700/80 text-base shadow-inner whitespace-nowrap">
+        <span id="statusDot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0"></span>
+        <span id="statusText" class="text-slate-300 font-mono text-sm">檢查硬體狀態...</span>
+      </div>
+
+      <!-- 自動推流開關 (依目前分頁自動對應機箱副屏或水冷頭) -->
+      <label class="flex items-center space-x-2 text-base text-slate-300 cursor-pointer bg-slate-800/50 hover:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700/70 transition whitespace-nowrap">
+        <input type="checkbox" id="autoSyncCheckbox" class="checkbox checkbox-sm checkbox-info" onchange="onHeaderSyncToggle(this.checked)" checked>
+        <span id="autoSyncLabel">實時同步</span>
+      </label>
+
+      <!-- 一鍵上傳按鈕 -->
+      <button id="pushBtn" onclick="onHeaderPushClick()" class="btn btn-sm btn-info text-white font-medium flex items-center space-x-1.5 shadow-lg shadow-sky-500/25 px-3.5 whitespace-nowrap">
+        <i class="fa-solid fa-cloud-arrow-up"></i>
+        <span id="pushBtnLabel">立即推送</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- 主內容工作區 (z-10, 全面取消右側長側欄，雙屏均採全寬整合編輯台) -->
+  <main class="flex-1 flex min-h-0 overflow-hidden relative z-10">
+    <section class="flex-1 min-w-0 flex flex-col p-5 overflow-y-auto items-center justify-start">
+
+      <!-- ==================== 分頁 1：機箱副屏 960x360 ==================== -->
+      <div id="chassisWorkspace" class="w-full max-w-[1840px] flex flex-col items-center pb-6">
+        <div class="w-full mb-3 flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center space-x-2">
+            <span class="text-base font-semibold text-slate-300 uppercase tracking-wider flex items-center space-x-1.5">
+              <i class="fa-solid fa-eye text-sky-400"></i>
+              <span>WYSIWYG 實時畫布預覽 (960 × 360)</span>
+            </span>
+            <span id="previewTag" class="badge badge-success badge-sm text-xs font-mono text-sm text-white">LIVE STREAM · SYNCED</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button onclick="resetStream()" class="btn btn-ghost btn-sm text-sm text-slate-300 border border-slate-700/60 hover:bg-slate-800 flex items-center space-x-1" title="若即時畫面卡頓可點此重置">
+              <i class="fa-solid fa-arrows-rotate text-sm"></i>
+              <span>重置串流</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 960x360 預覽容器 -->
+        <div class="w-full max-w-[1320px] aspect-[960/360] card-preview-box rounded-xl overflow-hidden relative border border-slate-700/80 bg-slate-950 flex items-center justify-center">
+          <img id="screenPreview" src="/api/stream" alt="Screen Preview" class="w-full h-full object-contain select-none">
+          <div id="previewSpinner" class="absolute inset-0 bg-slate-950/40 backdrop-blur-sm flex items-center justify-center opacity-0 pointer-events-none transition-opacity">
+            <i class="fa-solid fa-circle-notch fa-spin text-sky-400 text-3xl"></i>
+          </div>
+        </div>
+
+        <!-- 區塊排版 + 各自顏色編輯整合設計台 -->
+        <div class="w-full mt-5 p-4 rounded-xl glass-card border border-sky-500/25 space-y-3 shadow-xl">
+          <div class="flex flex-wrap items-center justify-between gap-2.5">
+            <div class="flex items-center space-x-2 min-w-0">
+              <div class="w-7 h-7 shrink-0 rounded-lg bg-sky-500/20 border border-sky-400/40 flex items-center justify-center text-sky-400">
+                <i class="fa-solid fa-table-columns text-base"></i>
+              </div>
+              <div class="min-w-0">
+                <h3 class="text-base font-bold text-slate-100 uppercase tracking-wider flex flex-wrap items-center gap-1.5">
+                  <span>副屏區塊視覺排版 & 卡片直覺配色</span>
+                  <span class="badge badge-info badge-sm text-xs font-mono text-xs">3 COLUMNS</span>
+                </h3>
+                <div class="text-sm text-slate-400">每張卡片直接內建「強調色調色盤」、「欄寬切換」與「快速替換」，點哪張改哪張！</div>
+              </div>
+            </div>
+
+            <!-- 快捷一鍵佈局推薦 -->
+            <div class="flex flex-wrap items-center gap-1.5">
+              <span class="text-sm text-slate-400">常用佈局：</span>
+              <button onclick="applyWidgetLayout('classic')" class="btn btn-sm text-sm btn-outline hover:btn-info text-slate-300">經典三卡</button>
+              <button onclick="applyWidgetLayout('music_wide')" class="btn btn-sm text-sm btn-outline hover:btn-info text-sky-300 border-sky-500/50">聽歌電台</button>
+              <button onclick="applyWidgetLayout('music_left')" class="btn btn-sm text-sm btn-outline hover:btn-info text-slate-300">左中合併+GPU</button>
+              <button onclick="applyWidgetLayout('gamer')" class="btn btn-sm text-sm btn-outline hover:btn-info text-slate-300">極客遊戲</button>
+              <button onclick="applyWidgetLayout('full_music')" class="btn btn-sm text-sm btn-outline hover:btn-info text-purple-300 border-purple-500/50">滿版電台</button>
+            </div>
+          </div>
+
+          <!-- 快速添加組件列 -->
+          <div class="flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-lg bg-slate-900/70 border border-slate-800 text-base">
+            <div class="flex flex-wrap items-center gap-2 text-slate-400 text-sm">
+              <i class="fa-solid fa-circle-plus text-sky-400"></i>
+              <span>添加小工具：</span>
+              <span id="colUsageBadge" class="badge badge-sm font-mono text-sm px-2 py-0.5 badge-info text-white">已用 3 / 3 欄</span>
+            </div>
+            <div class="flex flex-wrap items-center gap-1.5" id="widgetAddBtnGroup">
+              <button id="btnAdd-cpu" onclick="addWidgetToGrid('cpu')" class="btn btn-sm text-sm bg-slate-800/80 hover:bg-sky-900/60 border-slate-700 hover:border-sky-500 text-sky-300 shadow-sm transition">
+                <i class="fa-solid fa-microchip mr-1"></i> CPU 監控
+              </button>
+              <button id="btnAdd-gpu" onclick="addWidgetToGrid('gpu')" class="btn btn-sm text-sm bg-slate-800/80 hover:bg-orange-900/60 border-slate-700 hover:border-orange-500 text-orange-300 shadow-sm transition">
+                <i class="fa-solid fa-gamepad mr-1"></i> GPU 監控
+              </button>
+              <button id="btnAdd-ram" onclick="addWidgetToGrid('ram')" class="btn btn-sm text-sm bg-slate-800/80 hover:bg-purple-900/60 border-slate-700 hover:border-purple-500 text-purple-300 shadow-sm transition">
+                <i class="fa-solid fa-memory mr-1"></i> 記憶體矩陣
+              </button>
+              <button id="btnAdd-music" onclick="addWidgetToGrid('music')" class="btn btn-sm text-sm bg-slate-800/80 hover:bg-emerald-900/60 border-slate-700 hover:border-emerald-500 text-emerald-300 shadow-sm transition">
+                <i class="fa-solid fa-music mr-1"></i> 音樂播放卡
+              </button>
+              <button id="btnAdd-net" onclick="addWidgetToGrid('net')" class="btn btn-sm text-sm bg-slate-800/80 hover:bg-cyan-900/60 border-slate-700 hover:border-cyan-500 text-cyan-300 shadow-sm transition">
+                <i class="fa-solid fa-network-wired mr-1"></i> 網路流量
+              </button>
+            </div>
+          </div>
+
+          <!-- GridStack 3 欄畫布 (每張卡內嵌獨立顏色與操作) -->
+          <div class="grid-stack gs-3 grid-stack-3 bg-slate-950/80 rounded-xl p-2 border border-slate-800 min-h-[175px]" id="widgetGrid"></div>
+
+          <div class="flex flex-wrap items-center justify-between gap-2 text-sm text-slate-400 px-1 pt-0.5">
+            <span class="flex items-center space-x-1.5">
+              <i class="fa-solid fa-lightbulb text-amber-400 shrink-0"></i>
+              <span>每張卡片右上方的「色塊」可直接修改該張卡片的主題色；上限 3 欄，可拖曳換位或點欄寬標籤合併。</span>
+            </span>
+            <span id="gridSlotsStatus" class="font-mono text-sky-400 shrink-0">畫布狀態：即時同步中</span>
+          </div>
+        </div>
+
+        <!-- 機箱副屏全域設定三欄卡 (取代右側長側欄) -->
+        <div class="w-full mt-4 grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <!-- 卡 1：底板、卡片與字體樣式 -->
+          <div class="p-4 rounded-xl glass-card border border-slate-800 space-y-3">
+            <h3 class="text-base font-bold text-slate-300 uppercase tracking-wider flex items-center space-x-1.5 border-b border-slate-800 pb-2">
+              <i class="fa-solid fa-layer-group text-sky-400"></i>
+              <span>底板、卡片與字體配色</span>
+            </h3>
+            <div class="grid grid-cols-2 gap-2">
+              <div class="flex items-center justify-between p-2 rounded-lg bg-slate-900/60 border border-slate-800">
+                <div>
+                  <div class="text-sm font-medium text-slate-200">畫布底色</div>
+                  <div id="canvasBgVal" class="text-xs font-mono text-slate-400">#120a05</div>
+                </div>
+                <input type="color" id="canvasBgInput" value="#120a05" onchange="updateTheme()">
+              </div>
+              <div class="flex items-center justify-between p-2 rounded-lg bg-slate-900/60 border border-slate-800">
+                <div>
+                  <div class="text-sm font-medium text-slate-200">卡片底色</div>
+                  <div id="cardBgVal" class="text-xs font-mono text-slate-400">#241208</div>
+                </div>
+                <input type="color" id="cardBgInput" value="#241208" onchange="updateTheme()">
+              </div>
+              <div class="flex items-center justify-between p-2 rounded-lg bg-slate-900/60 border border-slate-800">
+                <div>
+                  <div class="text-sm font-medium text-slate-200">卡片邊框</div>
+                  <div id="cardBorderVal" class="text-xs font-mono text-slate-400">#7c2d12</div>
+                </div>
+                <input type="color" id="cardBorderInput" value="#7c2d12" onchange="updateTheme()">
+              </div>
+              <div class="flex items-center justify-between p-2 rounded-lg bg-slate-900/60 border border-slate-800">
+                <div>
+                  <div class="text-sm font-medium text-slate-200">核心大字</div>
+                  <div class="text-xs text-slate-500">時鐘/數值</div>
+                </div>
+                <input type="color" id="textPrimaryInput" value="#fed7aa" onchange="updateTheme()">
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-2 items-center">
+              <div class="flex items-center justify-between p-2 rounded-lg bg-slate-900/60 border border-slate-800">
+                <div>
+                  <div class="text-sm font-medium text-slate-200">標籤輔字</div>
+                  <div class="text-xs text-slate-500">標題/日期</div>
+                </div>
+                <input type="color" id="textSecondaryInput" value="#fdba74" onchange="updateTheme()">
+              </div>
+              <div class="p-2 rounded-lg bg-slate-900/60 border border-slate-800 space-y-1">
+                <div class="flex items-center justify-between text-sm">
+                  <span class="text-slate-300">卡片不透明度</span>
+                  <span id="cardOpacityVal" class="font-mono text-sky-400">85%</span>
+                </div>
+                <input type="range" id="cardOpacityInput" min="0" max="100" value="85" class="w-full range range-sm range-info" oninput="onSliderInput('cardOpacity')" onchange="updateTheme()">
+              </div>
+            </div>
+            <!-- 隱藏同步用強調色欄位 (由各卡片內嵌調色盤即時連動) -->
+            <input type="hidden" id="cpuAccentInput" value="#f59e0b">
+            <input type="hidden" id="ramAccentInput" value="#d97706">
+            <input type="hidden" id="gpuAccentInput" value="#ea580c">
+          </div>
+
+          <!-- 卡 2：副屏動態流光 & 背景壁紙 -->
+          <div class="p-4 rounded-xl glass-card border border-slate-800 space-y-3">
+            <h3 class="text-base font-bold text-slate-300 uppercase tracking-wider flex items-center justify-between border-b border-slate-800 pb-2">
+              <span class="flex items-center space-x-1.5"><i class="fa-solid fa-wand-magic-sparkles text-sky-400"></i><span>動態流光 & 背景壁紙</span></span>
+              <span id="bgStatusText" class="text-sm font-normal text-slate-400">未上傳</span>
+            </h3>
+            <div class="grid grid-cols-4 gap-1.5">
+              <button onclick="setAmbientMode('waves')" id="fxBtn-waves" class="btn btn-sm text-sm btn-outline hover:btn-info text-slate-300">波浪</button>
+              <button onclick="setAmbientMode('particles')" id="fxBtn-particles" class="btn btn-sm text-sm btn-outline hover:btn-info text-slate-300">點線</button>
+              <button onclick="setAmbientMode('dual')" id="fxBtn-dual" class="btn btn-sm text-sm btn-outline hover:btn-info text-slate-300">融合</button>
+              <button onclick="setAmbientMode('off')" id="fxBtn-off" class="btn btn-sm text-sm btn-outline hover:btn-error text-slate-300">關閉</button>
+            </div>
+            <div class="space-y-1">
+              <div class="flex items-center justify-between text-sm text-slate-400">
+                <span>動態流光亮度</span>
+                <span id="fxOpacityVal" class="font-mono text-sky-400">55%</span>
+              </div>
+              <input type="range" id="fxOpacityInput" min="0" max="100" value="55" class="w-full range range-sm range-info" oninput="setAmbientOpacity(this.value)">
+            </div>
+            <div class="border border-dashed border-slate-700 hover:border-sky-400 rounded-lg p-2 text-center cursor-pointer bg-slate-900/50 hover:bg-slate-900/80 transition flex items-center justify-center space-x-2" onclick="document.getElementById('bgFileInput').click()">
+              <input type="file" id="bgFileInput" accept="image/*" class="hidden" onchange="uploadBackgroundImage(this)">
+              <i class="fa-solid fa-cloud-arrow-up text-sky-400 text-lg"></i>
+              <span class="text-base text-slate-300">上傳 960×360 自訂壁紙</span>
+            </div>
+            <div id="bgOptions" class="space-y-2 hidden">
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <div class="flex justify-between text-sm text-slate-400"><span>暗度</span><span id="bgDimVal" class="font-mono text-sky-400">0%</span></div>
+                  <input type="range" id="bgDimInput" min="0" max="90" value="0" class="w-full range range-sm range-info" oninput="onSliderInput('bgDim')" onchange="updateTheme()">
+                </div>
+                <div>
+                  <div class="flex justify-between text-sm text-slate-400"><span>模糊</span><span id="bgBlurVal" class="font-mono text-sky-400">0 px</span></div>
+                  <input type="range" id="bgBlurInput" min="0" max="25" value="0" class="w-full range range-sm range-info" oninput="onSliderInput('bgBlur')" onchange="updateTheme()">
+                </div>
+              </div>
+              <button onclick="removeBackgroundImage()" class="btn btn-sm text-sm btn-outline btn-error w-full">移除背景圖片</button>
+            </div>
+          </div>
+
+          <!-- 卡 3：硬體設定 & 精選風格預設 -->
+          <div class="p-4 rounded-xl glass-card border border-slate-800 space-y-3">
+            <h3 class="text-base font-bold text-slate-300 uppercase tracking-wider flex items-center space-x-1.5 border-b border-slate-800 pb-2">
+              <i class="fa-solid fa-gear text-purple-400"></i>
+              <span>硬體輸出 & 風格預設</span>
+            </h3>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="text-sm text-slate-400 mb-1 block">旋轉角度</label>
+                <select id="rotateSelect" onchange="updateTheme()" class="select select-bordered select-sm text-sm w-full bg-slate-900 text-slate-200">
+                  <option value="270">270° (標準橫裝)</option>
+                  <option value="90">90° (倒置安裝)</option>
+                  <option value="0">0° (物理直屏)</option>
+                  <option value="180">180° (反向直屏)</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-sm text-slate-400 mb-1 block">刷新幀率 (FPS)</label>
+                <select id="fpsSelect" onchange="updateTheme()" class="select select-bordered select-sm text-sm w-full bg-slate-900 text-slate-200">
+                  <option value="2.0">2 FPS (穩定節能)</option>
+                  <option value="3.0">3 FPS (平穩動態)</option>
+                  <option value="5.0">5 FPS (輕量動態)</option>
+                  <option value="10.0">10 FPS (平滑動態)</option>
+                  <option value="15.0">15 FPS (高刷新率)</option>
+                  <option value="20.0">20 FPS (超流暢)</option>
+                  <option value="25.0">25 FPS (極致幀率)</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <div class="text-sm text-slate-400 mb-1.5">一鍵風格預設</div>
+              <div class="grid grid-cols-5 gap-1.5">
+                <button id="preset-white" onclick="applyPreset('white')" class="preset-card p-1.5 rounded-lg border border-slate-700 hover:border-sky-400 text-center transition" title="純白極簡風">
+                  <div class="h-5 rounded bg-slate-100 text-slate-800 text-sm font-bold flex items-center justify-center">白</div>
+                </button>
+                <button id="preset-dark" onclick="applyPreset('dark')" class="preset-card p-1.5 rounded-lg border border-slate-700 hover:border-sky-400 text-center transition" title="賽博暗夜風">
+                  <div class="h-5 rounded bg-slate-950 text-sky-400 text-sm font-bold flex items-center justify-center border border-slate-700">暗</div>
+                </button>
+                <button id="preset-glass" onclick="applyPreset('glass')" class="preset-card p-1.5 rounded-lg border border-slate-700 hover:border-sky-400 text-center transition" title="毛玻璃透光">
+                  <div class="h-5 rounded bg-gradient-to-r from-blue-900 to-indigo-900 text-indigo-200 text-sm font-bold flex items-center justify-center">透</div>
+                </button>
+                <button id="preset-matrix" onclick="applyPreset('matrix')" class="preset-card p-1.5 rounded-lg border border-slate-700 hover:border-sky-400 text-center transition" title="黑客矩陣綠">
+                  <div class="h-5 rounded bg-emerald-950 text-emerald-400 text-sm font-bold flex items-center justify-center border border-emerald-800">綠</div>
+                </button>
+                <button id="preset-sunset" onclick="applyPreset('sunset')" class="preset-card p-1.5 rounded-lg border border-slate-700 hover:border-sky-400 text-center transition" title="落日琥珀金">
+                  <div class="h-5 rounded bg-gradient-to-r from-amber-950 to-orange-900 text-amber-300 text-sm font-bold flex items-center justify-center">金</div>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== 分頁 2：銀欣 480x480 正方形水冷頭（動態 2×2 指向編輯台） ==================== -->
+      <div id="aioWorkspace" class="w-full max-w-[1840px] hidden flex-col items-center pb-6">
+        <div class="w-full mb-3 flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center space-x-2">
+            <span class="text-base font-semibold text-slate-300 uppercase tracking-wider flex items-center space-x-1.5">
+              <i class="fa-solid fa-snowflake text-cyan-400"></i>
+              <span>銀欣 E360MAX 水冷頭 2×2 模組化指向編輯台 (480 × 480)</span>
+            </span>
+            <span id="aioPreviewTag" class="badge badge-info badge-sm text-xs font-mono text-sm text-white">HID DIRECT · LIVE</span>
+          </div>
+          <div class="flex flex-wrap items-center gap-1.5">
+            <span class="text-sm text-slate-400">常用 2×2 佈局：</span>
+            <button onclick="applyAioLayoutPreset('cpu_trio')" class="btn btn-sm text-sm btn-outline hover:btn-info text-sky-300 border-sky-500/50">上1×2 + 下2小</button>
+            <button onclick="applyAioLayoutPreset('quad_4')" class="btn btn-sm text-sm btn-outline hover:btn-info text-slate-300">四格 1×1</button>
+            <button onclick="applyAioLayoutPreset('dual_rows')" class="btn btn-sm text-sm btn-outline hover:btn-info text-slate-300">上下雙橫條</button>
+            <button onclick="applyAioLayoutPreset('dual_cols')" class="btn btn-sm text-sm btn-outline hover:btn-info text-slate-300">左右雙直條</button>
+            <button onclick="applyAioLayoutPreset('left_tall')" class="btn btn-sm text-sm btn-outline hover:btn-info text-slate-300">左直+右2小</button>
+            <span id="aioMetaTag" class="text-sm font-mono text-slate-400 ml-1">UUID: --</span>
+            <button onclick="resetAioStream()" class="btn btn-ghost btn-sm text-sm text-slate-300 border border-slate-700/60 hover:bg-slate-800" title="重置串流">
+              <i class="fa-solid fa-arrows-rotate text-sm"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- 三欄動態指向舞台：[左側動態卡片 (跟隨左欄/橫條區塊)] | [中央 480×480 實時預覽] | [右側動態卡片 (跟隨右欄區塊)] -->
+        <div class="w-full grid grid-cols-1 lg:grid-cols-[minmax(320px,1fr)_auto_minmax(320px,1fr)] items-center gap-4 lg:gap-0 my-1">
+          <!-- 左側動態控制卡容器 -->
+          <div id="aioLeftCallouts" class="grid grid-rows-2 gap-6 items-center self-stretch py-6"></div>
+
+          <!-- 中央 480×480 正方形預覽 -->
+          <div class="flex items-center justify-center py-2">
+            <div class="w-[360px] h-[360px] xl:w-[440px] xl:h-[440px] 2xl:w-[480px] 2xl:h-[480px] rounded-2xl aio-pump-bezel overflow-hidden relative bg-slate-950 flex items-center justify-center shrink-0">
+              <img id="aioScreenPreview" src="" alt="SilverStone AIO 480x480 Preview" class="w-full h-full object-cover select-none">
+            </div>
+          </div>
+
+          <!-- 右側動態控制卡容器 -->
+          <div id="aioRightCallouts" class="grid grid-rows-2 gap-6 items-center self-stretch py-6"></div>
+        </div>
+
+        <!-- 底部：水冷頭全域外觀、桌布與硬體輸出三欄卡 -->
+        <div class="w-full mt-4 grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <!-- 卡 1：頂部條、底板與字體 -->
+          <div class="p-3.5 rounded-xl glass-card border border-slate-800 space-y-2.5">
+            <h3 class="text-base font-bold text-slate-300 uppercase tracking-wider flex items-center justify-between border-b border-slate-800 pb-1.5">
+              <span class="flex items-center space-x-1.5"><i class="fa-solid fa-palette text-cyan-400"></i><span>頂部條、底板與字體</span></span>
+              <label class="flex items-center space-x-1.5 text-sm font-normal text-slate-300 cursor-pointer">
+                <span>巡航光點</span>
+                <input type="checkbox" id="aioAmbientRingInput" class="toggle toggle-sm toggle-info" onchange="updateAioTheme()" checked>
+              </label>
+            </h3>
+            <div class="grid grid-cols-2 gap-2">
+              <div class="flex items-center justify-between p-2 rounded-lg bg-slate-900/60 border border-slate-800">
+                <div>
+                  <div class="text-sm text-slate-200">畫布底色</div>
+                  <div id="aioCanvasBgVal" class="text-xs font-mono text-slate-400">#080c16</div>
+                </div>
+                <input type="color" id="aioCanvasBgInput" value="#080c16" onchange="updateAioTheme()">
+              </div>
+              <div class="flex items-center justify-between p-2 rounded-lg bg-slate-900/60 border border-slate-800">
+                <div>
+                  <div class="text-sm text-slate-200">頂部時鐘色</div>
+                  <div class="text-xs text-slate-500">時間與光點</div>
+                </div>
+                <input type="color" id="aioAccentPrimaryInput" value="#00e5ff" onchange="updateAioTheme()">
+              </div>
+              <div class="flex items-center justify-between p-2 rounded-lg bg-slate-900/60 border border-slate-800">
+                <div>
+                  <div class="text-sm text-slate-200">核心數值字</div>
+                  <div class="text-xs text-slate-500">大字顏色</div>
+                </div>
+                <input type="color" id="aioTextPrimaryInput" value="#f8fafc" onchange="updateAioTheme()">
+              </div>
+              <div class="flex items-center justify-between p-2 rounded-lg bg-slate-900/60 border border-slate-800">
+                <div>
+                  <div class="text-sm text-slate-200">輔助標籤字</div>
+                  <div class="text-xs text-slate-500">RPM / 副標</div>
+                </div>
+                <input type="color" id="aioTextSecondaryInput" value="#94a3b8" onchange="updateAioTheme()">
+              </div>
+            </div>
+          </div>
+
+          <!-- 卡 2：方形背景桌布 -->
+          <div class="p-3.5 rounded-xl glass-card border border-slate-800 space-y-2.5">
+            <h3 class="text-base font-bold text-slate-300 uppercase tracking-wider flex items-center justify-between border-b border-slate-800 pb-1.5">
+              <span class="flex items-center space-x-1.5"><i class="fa-regular fa-image text-emerald-400"></i><span>480×480 方形桌布</span></span>
+              <span id="aioBgStatusText" class="text-sm font-normal text-slate-400">未上傳</span>
+            </h3>
+            <div class="border border-dashed border-slate-700 hover:border-emerald-400 rounded-lg p-2.5 text-center cursor-pointer bg-slate-900/50 hover:bg-slate-900/80 transition flex items-center justify-center space-x-2" onclick="document.getElementById('aioBgFileInput').click()">
+              <input type="file" id="aioBgFileInput" accept="image/*" class="hidden" onchange="uploadAioBg(this)">
+              <i class="fa-solid fa-cloud-arrow-up text-emerald-400"></i>
+              <span class="text-base text-slate-200">上傳背景圖片 (自動裁切 1:1)</span>
+            </div>
+            <div id="aioBgOptions" class="space-y-2 hidden">
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <div class="flex justify-between text-sm text-slate-400"><span>暗度</span><span id="aioBgDimVal" class="font-mono text-emerald-400">35%</span></div>
+                  <input type="range" id="aioBgDimInput" min="0" max="90" value="35" class="w-full range range-sm range-info" oninput="onAioSliderInput('dim')" onchange="updateAioTheme()">
+                </div>
+                <div>
+                  <div class="flex justify-between text-sm text-slate-400"><span>模糊</span><span id="aioBgBlurVal" class="font-mono text-emerald-400">0 px</span></div>
+                  <input type="range" id="aioBgBlurInput" min="0" max="25" value="0" class="w-full range range-sm range-info" oninput="onAioSliderInput('blur')" onchange="updateAioTheme()">
+                </div>
+              </div>
+              <button onclick="removeAioBg()" class="btn btn-sm text-sm btn-outline btn-error w-full">移除背景圖片</button>
+            </div>
+          </div>
+
+          <!-- 卡 3：硬體輸出設定 -->
+          <div class="p-3.5 rounded-xl glass-card border border-slate-800 space-y-2.5">
+            <h3 class="text-base font-bold text-slate-300 uppercase tracking-wider flex items-center justify-between border-b border-slate-800 pb-1.5">
+              <span class="flex items-center space-x-1.5"><i class="fa-solid fa-gear text-purple-400"></i><span>水冷頭硬體輸出</span></span>
+            </h3>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="text-sm text-slate-400 mb-0.5 block">旋轉角度</label>
+                <select id="aioRotateSelect" onchange="updateAioTheme()" class="select select-bordered select-sm text-sm w-full bg-slate-900 text-slate-200">
+                  <option value="0">0° (正向)</option>
+                  <option value="90">90° (順時針)</option>
+                  <option value="180">180° (倒置)</option>
+                  <option value="270">270° (逆時針)</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-sm text-slate-400 mb-0.5 block">刷新幀率</label>
+                <select id="aioFpsSelect" onchange="updateAioTheme()" class="select select-bordered select-sm text-sm w-full bg-slate-900 text-slate-200">
+                  <option value="2.0">2 FPS (省電)</option>
+                  <option value="5.0">5 FPS (輕量)</option>
+                  <option value="10.0">10 FPS (推薦)</option>
+                  <option value="15.0">15 FPS (高刷)</option>
+                  <option value="20.0">20 FPS (極致)</option>
+                </select>
+              </div>
+            </div>
+            <div class="space-y-1">
+              <div class="flex items-center justify-between text-sm text-slate-400">
+                <span>JPEG 畫質 (Quality)</span>
+                <span id="aioQualityVal" class="font-mono text-purple-300">88</span>
+              </div>
+              <input type="range" id="aioQualityInput" min="55" max="95" value="88" class="w-full range range-sm range-info" oninput="onAioSliderInput('quality')" onchange="updateAioTheme()">
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <script>
+    let currentConfig = {};
+    let statusTimer = null;
+    let sliderDebounceTimer = null;
+    let activePreset = null;
+
+    // 精選預設主題方案
+    const PRESETS = {
+      white: {
+        canvas_bg: "#f8fafc",
+        card_bg: "#ffffff",
+        card_opacity: 0.95,
+        card_border: "#e2e8f0",
+        card_border_opacity: 1.0,
+        text_primary: "#0f172a",
+        text_secondary: "#64748b",
+        cpu_accent: "#0284c7",
+        ram_accent: "#7c3aed",
+        gpu_accent: "#ea580c",
+        status_accent: "#10b981",
+        bg_dim: 0.0,
+        bg_blur: 0,
+        ambient_fx: "dual",
+        ambient_opacity: 0.45
+      },
+      dark: {
+        canvas_bg: "#080c14",
+        card_bg: "#0f172a",
+        card_opacity: 0.90,
+        card_border: "#1e293b",
+        card_border_opacity: 1.0,
+        text_primary: "#f8fafc",
+        text_secondary: "#94a3b8",
+        cpu_accent: "#00f0ff",
+        ram_accent: "#a855f7",
+        gpu_accent: "#ff8800",
+        status_accent: "#22c55e",
+        bg_dim: 0.0,
+        bg_blur: 0,
+        ambient_fx: "dual",
+        ambient_opacity: 0.65
+      },
+      glass: {
+        canvas_bg: "#090d16",
+        card_bg: "#ffffff",
+        card_opacity: 0.35,
+        card_border: "#ffffff",
+        card_border_opacity: 0.5,
+        text_primary: "#ffffff",
+        text_secondary: "#e2e8f0",
+        cpu_accent: "#38bdf8",
+        ram_accent: "#c084fc",
+        gpu_accent: "#fb923c",
+        status_accent: "#34d399",
+        bg_dim: 0.35,
+        bg_blur: 10,
+        ambient_fx: "dual",
+        ambient_opacity: 0.85
+      },
+      matrix: {
+        canvas_bg: "#030a05",
+        card_bg: "#06170d",
+        card_opacity: 0.92,
+        card_border: "#14532d",
+        card_border_opacity: 1.0,
+        text_primary: "#4ade80",
+        text_secondary: "#22c55e",
+        cpu_accent: "#4ade80",
+        ram_accent: "#86efac",
+        gpu_accent: "#a3e635",
+        status_accent: "#22c55e",
+        bg_dim: 0.0,
+        bg_blur: 0,
+        ambient_fx: "particles",
+        ambient_opacity: 0.70
+      },
+      sunset: {
+        canvas_bg: "#120a05",
+        card_bg: "#241208",
+        card_opacity: 0.92,
+        card_border: "#7c2d12",
+        card_border_opacity: 1.0,
+        text_primary: "#fed7aa",
+        text_secondary: "#fdba74",
+        cpu_accent: "#f59e0b",
+        ram_accent: "#d97706",
+        gpu_accent: "#ea580c",
+        status_accent: "#fbbf24",
+        bg_dim: 0.0,
+        bg_blur: 0,
+        ambient_fx: "waves",
+        ambient_opacity: 0.65
+      }
+    };
+
+    // ── 0. GridStack.js 模組化排版系統 (方案 A: 視覺拖曳換位 & 拉寬合併) ────
+    let grid = null;
+
+    const WIDGET_META = {
+      cpu: {
+        title: "CPU 監控",
+        subtitle: "USAGE · FAN · PWM",
+        icon: "fa-solid fa-microchip",
+        color: "text-sky-400",
+        bg: "bg-sky-500/20",
+        badge: "badge-info"
+      },
+      gpu: {
+        title: "GPU 監控",
+        subtitle: "USAGE · TEMP · FAN",
+        icon: "fa-solid fa-gamepad",
+        color: "text-orange-400",
+        bg: "bg-orange-500/20",
+        badge: "badge-warning"
+      },
+      ram: {
+        title: "記憶體矩陣",
+        subtitle: "ALLOCATED · CAPACITY",
+        icon: "fa-solid fa-memory",
+        color: "text-purple-400",
+        bg: "bg-purple-500/20",
+        badge: "badge-secondary"
+      },
+      music: {
+        title: "音樂播放卡",
+        subtitle: "NOW PLAYING · 32-BAND EQ",
+        icon: "fa-solid fa-music",
+        color: "text-emerald-400",
+        bg: "bg-emerald-500/20",
+        badge: "badge-success"
+      },
+      net: {
+        title: "網路流量",
+        subtitle: "DOWN / UP DUPLEX",
+        icon: "fa-solid fa-network-wired",
+        color: "text-cyan-400",
+        bg: "bg-cyan-500/20",
+        badge: "badge-accent"
+      }
+    };
+
+    function getWidgetAccentKey(id) {
+      if (id === 'gpu') return 'gpu_accent';
+      if (id === 'ram') return 'ram_accent';
+      if (id === 'music') return 'status_accent';
+      return 'cpu_accent';
+    }
+
+    function getWidgetAccentColor(id) {
+      const key = getWidgetAccentKey(id);
+      const defaults = { cpu_accent: '#f59e0b', gpu_accent: '#ea580c', ram_accent: '#d97706', status_accent: '#fbbf24' };
+      return (currentConfig && currentConfig[key]) || defaults[key] || '#38bdf8';
+    }
+
+    function onWidgetAccentChange(id, color) {
+      const key = getWidgetAccentKey(id);
+      currentConfig[key] = color;
+      if (key === 'cpu_accent' && document.getElementById('cpuAccentInput')) document.getElementById('cpuAccentInput').value = color;
+      if (key === 'gpu_accent' && document.getElementById('gpuAccentInput')) document.getElementById('gpuAccentInput').value = color;
+      if (key === 'ram_accent' && document.getElementById('ramAccentInput')) document.getElementById('ramAccentInput').value = color;
+      updateTheme(false);
+    }
+
+    function createWidgetCardHtml(id, w) {
+      const meta = WIDGET_META[id] || {
+        title: id.toUpperCase(),
+        subtitle: "CUSTOM WIDGET",
+        icon: "fa-solid fa-cube",
+        color: "text-slate-300",
+        bg: "bg-slate-700/30",
+        badge: "badge-neutral"
+      };
+
+      const spanText = w === 1 ? '1 欄' : (w === 2 ? '2 欄 [合併]' : '3 欄 [滿版]');
+      const cardColor = getWidgetAccentColor(id);
+
+      return `
+        <div class="h-full flex flex-col justify-between p-3 select-none relative group" data-widget-id="${id}">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="w-7 h-7 rounded-lg ${meta.bg} flex items-center justify-center text-base ${meta.color} shadow-sm">
+                <i class="${meta.icon}"></i>
+              </span>
+              <div>
+                <div class="text-base font-bold text-slate-100 flex items-center space-x-1.5">
+                  <span>${meta.title}</span>
+                  <!-- 點擊快速切換卡片欄寬（小卡 / 中卡 / 大卡） -->
+                  <div class="dropdown dropdown-bottom dropdown-start card-dropdown">
+                    <button type="button" onmousedown="event.stopPropagation();" onclick="event.stopPropagation(); toggleCardDropdown(this);" class="badge badge-sm text-xs font-mono text-xs px-1.5 py-0.5 cursor-pointer hover:border-sky-400 hover:scale-105 transition flex items-center space-x-0.5 ${meta.badge}" title="點擊切換欄寬 (小卡/中卡/滿版)">
+                      <span data-badge-text>${spanText}</span>
+                      <i class="fa-solid fa-angle-down text-xs"></i>
+                    </button>
+                    <ul onmousedown="event.stopPropagation();" class="dropdown-content z-50 menu p-1 shadow-2xl bg-slate-900 border border-slate-700/80 rounded-xl w-36 text-base text-slate-200 mt-1">
+                      <li class="menu-title text-xs text-slate-400 py-0.5 px-2">切換卡片寬度</li>
+                      <li><button type="button" onclick="event.stopPropagation(); closeAllCardDropdowns(); setWidgetWidth('${id}', 1);" class="hover:bg-slate-800 ${w === 1 ? 'text-sky-300 font-bold' : ''}">1 欄 [標準小卡]</button></li>
+                      <li><button type="button" onclick="event.stopPropagation(); closeAllCardDropdowns(); setWidgetWidth('${id}', 2);" class="hover:bg-slate-800 ${w === 2 ? 'text-sky-300 font-bold' : ''}">2 欄 [雙欄中卡]</button></li>
+                      <li><button type="button" onclick="event.stopPropagation(); closeAllCardDropdowns(); setWidgetWidth('${id}', 3);" class="hover:bg-slate-800 ${w === 3 ? 'text-sky-300 font-bold' : ''}">3 欄 [滿版大卡]</button></li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="text-sm text-slate-400 font-mono tracking-tight">${meta.subtitle}</div>
+              </div>
+            </div>
+            <div class="flex items-center space-x-1">
+              <!-- 此卡片專屬強調色直覺調色盤 -->
+              <input type="color" value="${cardColor}" onmousedown="event.stopPropagation();" onclick="event.stopPropagation();" onchange="onWidgetAccentChange('${id}', this.value)" style="width:32px;height:32px;" title="修改「${meta.title}」的專屬強調色">
+              <!-- 快速替換為其他小工具選單 -->
+              <div class="dropdown dropdown-end card-dropdown">
+                <button type="button" onmousedown="event.stopPropagation();" onclick="event.stopPropagation(); toggleCardDropdown(this);" class="btn btn-ghost btn-sm text-slate-400 hover:text-sky-300 px-2 h-8 min-h-0 cursor-pointer" title="快速替換此區塊為其他小工具">
+                  <i class="fa-solid fa-arrow-right-arrow-left text-sm pointer-events-none"></i>
+                </button>
+                <ul onmousedown="event.stopPropagation();" class="dropdown-content z-50 menu p-1.5 shadow-2xl bg-slate-900 border border-slate-700/80 rounded-xl w-40 text-base text-slate-200 mt-1">
+                  <li class="menu-title text-sm text-slate-400 uppercase tracking-wider py-1 px-2">替換為小工具</li>
+                  <li><button type="button" onclick="event.stopPropagation(); closeAllCardDropdowns(); replaceWidget('${id}', 'cpu')" class="hover:bg-slate-800 text-sky-300 py-1.5"><i class="fa-solid fa-microchip w-4"></i> CPU 監控</button></li>
+                  <li><button type="button" onclick="event.stopPropagation(); closeAllCardDropdowns(); replaceWidget('${id}', 'gpu')" class="hover:bg-slate-800 text-orange-300 py-1.5"><i class="fa-solid fa-gamepad w-4"></i> GPU 監控</button></li>
+                  <li><button type="button" onclick="event.stopPropagation(); closeAllCardDropdowns(); replaceWidget('${id}', 'ram')" class="hover:bg-slate-800 text-purple-300 py-1.5"><i class="fa-solid fa-memory w-4"></i> 記憶體矩陣</button></li>
+                  <li><button type="button" onclick="event.stopPropagation(); closeAllCardDropdowns(); replaceWidget('${id}', 'music')" class="hover:bg-slate-800 text-emerald-300 py-1.5"><i class="fa-solid fa-music w-4"></i> 音樂播放卡</button></li>
+                  <li><button type="button" onclick="event.stopPropagation(); closeAllCardDropdowns(); replaceWidget('${id}', 'net')" class="hover:bg-slate-800 text-cyan-300 py-1.5"><i class="fa-solid fa-network-wired w-4"></i> 網路流量</button></li>
+                </ul>
+              </div>
+              <!-- 移除此區塊按鈕 -->
+              <button type="button" onmousedown="event.stopPropagation();" onclick="event.stopPropagation(); removeWidgetFromGrid(this);" class="btn btn-ghost btn-sm text-slate-400 hover:text-rose-400 px-2 h-8 min-h-0 opacity-70 group-hover:opacity-100 transition" title="移除此區塊">
+                <i class="fa-solid fa-xmark text-base pointer-events-none"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between text-sm text-slate-400 border-t border-slate-700/60 pt-2">
+            <span class="flex items-center space-x-1">
+              <i class="fa-solid fa-arrows-left-right text-sm text-slate-500"></i>
+              <span>左右拖曳換位</span>
+            </span>
+            <!-- 點擊快速變大/還原按鈕 -->
+            <button type="button" onmousedown="event.stopPropagation();" onclick="event.stopPropagation(); setWidgetWidth('${id}', ${w === 1 ? 2 : 1});" class="flex items-center space-x-1 text-sky-400 hover:text-sky-300 font-mono transition cursor-pointer" title="點擊直接變為${w === 1 ? '2 欄中卡' : '1 欄小卡'}">
+              <span data-expand-hint>${w === 1 ? '拉右邊或點此變中卡 ➔' : '點此還原小卡 ↺'}</span>
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    // ── 浮動通知提示 (Toast) ──────────────────────────────────────────────────
+    function showToast(msg, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+      const toast = document.createElement('div');
+      const colors = {
+        info: 'bg-sky-950/95 border-sky-500/60 text-sky-200',
+        warning: 'bg-amber-950/95 border-amber-500/60 text-amber-200',
+        error: 'bg-rose-950/95 border-rose-500/60 text-rose-200',
+        success: 'bg-emerald-950/95 border-emerald-500/60 text-emerald-200'
+      };
+      const icons = {
+        info: 'fa-circle-info text-sky-400',
+        warning: 'fa-triangle-exclamation text-amber-400',
+        error: 'fa-circle-exclamation text-rose-400',
+        success: 'fa-circle-check text-emerald-400'
+      };
+      toast.className = `flex items-center space-x-2.5 px-3.5 py-2 rounded-lg border backdrop-blur-md shadow-2xl text-base font-medium transition-all duration-300 transform translate-y-2 opacity-0 pointer-events-auto ${colors[type] || colors.info}`;
+      toast.innerHTML = `<i class="fa-solid ${icons[type] || icons.info} text-base"></i><span>${msg}</span>`;
+      container.appendChild(toast);
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+      setTimeout(() => {
+        toast.classList.add('translate-y-2', 'opacity-0');
+        setTimeout(() => toast.remove(), 350);
+      }, 2400);
+    }
+
+    let isInternalLayoutUpdate = false;
+
+    // ── 從畫布精確讀取當前啟用的卡片（永不遺失 ID、位置與寬度）────────────────
+    function getActiveWidgetsFromGrid() {
+      if (!grid) return [];
+      const items = document.querySelectorAll('#widgetGrid .grid-stack-item');
+      const widgets = [];
+      const seenIds = new Set();
+
+      items.forEach(el => {
+        const node = el.gridstackNode;
+        const inner = el.querySelector('[data-widget-id]');
+        const id = (inner ? inner.getAttribute('data-widget-id') : null) || el.getAttribute('gs-id') || (node ? node.id : null);
+        if (!id || seenIds.has(id.toLowerCase())) return;
+
+        seenIds.add(id.toLowerCase());
+        const x = node && node.x !== undefined ? node.x : parseInt(el.getAttribute('gs-x') || '0', 10);
+        const w = node && node.w !== undefined ? node.w : parseInt(el.getAttribute('gs-w') || '1', 10);
+
+        widgets.push({
+          id: id.toLowerCase(),
+          x: Math.max(0, Math.min(2, isNaN(x) ? 0 : x)),
+          w: Math.max(1, Math.min(3, isNaN(w) ? 1 : w)),
+          el: el
+        });
+      });
+
+      widgets.sort((a, b) => a.x - b.x);
+      return widgets;
+    }
+
+    // ── 強制 3 欄物理畫布約束（嚴禁重疊、嚴禁第二行、自動防越界）─────────────
+    function enforceGridConstraints() {
+      if (!grid || isInternalLayoutUpdate) return;
+      isInternalLayoutUpdate = true;
+
+      try {
+        const widgets = getActiveWidgetsFromGrid();
+        let curX = 0;
+
+        grid.batchUpdate();
+        widgets.forEach(item => {
+          let targetX = Math.max(curX, item.x);
+          if (targetX >= 3) {
+            // 超出第 3 欄的越界卡片自動移除，絕不允許擠到第二行或重疊
+            grid.removeWidget(item.el);
+            return;
+          }
+          let maxAllowedW = 3 - targetX;
+          let targetW = Math.max(1, Math.min(item.w, maxAllowedW));
+
+          grid.update(item.el, {
+            x: targetX,
+            y: 0,
+            w: targetW,
+            h: 1
+          });
+
+          // 更新卡片內部的欄寬標籤與提示
+          const badgeTxt = item.el.querySelector('[data-badge-text]');
+          if (badgeTxt) {
+            badgeTxt.textContent = targetW === 1 ? '1 欄' : (targetW === 2 ? '2 欄 [合併]' : '3 欄 [滿版]');
+          }
+          const expandHint = item.el.querySelector('[data-expand-hint]');
+          if (expandHint) {
+            expandHint.textContent = targetW === 1 ? '拉右邊或點此變中卡 ➔' : '點此還原小卡 ↺';
+          }
+          curX = targetX + targetW;
+        });
+        grid.batchUpdate(false);
+      } finally {
+        isInternalLayoutUpdate = false;
+      }
+
+      updateAddButtonsUI();
+    }
+
+    // ── 即時同步「添加卡片列」的欄位佔用狀態與按鈕狀態 ──────────────────────
+    function updateAddButtonsUI() {
+      const widgets = getActiveWidgetsFromGrid();
+      const activeIds = new Set(widgets.map(w => w.id));
+
+      let totalUsedCols = 0;
+      widgets.forEach(w => {
+        totalUsedCols += w.w;
+      });
+      totalUsedCols = Math.min(3, totalUsedCols);
+
+      const badge = document.getElementById('colUsageBadge');
+      if (badge) {
+        if (totalUsedCols >= 3) {
+          badge.className = "badge badge-sm font-mono text-sm px-2 py-0.5 badge-warning text-slate-900 font-bold";
+          badge.textContent = `已用 3 / 3 欄 [已滿: 3小 / 1小1中 / 1大]`;
+        } else if (totalUsedCols === 0) {
+          badge.className = "badge badge-sm font-mono text-sm px-2 py-0.5 badge-neutral text-slate-300";
+          badge.textContent = `已用 0 / 3 欄 [空白畫布]`;
+        } else {
+          badge.className = "badge badge-sm font-mono text-sm px-2 py-0.5 badge-info text-white";
+          badge.textContent = `已用 ${totalUsedCols} / 3 欄 [剩餘 ${3 - totalUsedCols} 欄]`;
+        }
+      }
+
+      ['cpu', 'gpu', 'ram', 'music', 'net'].forEach(id => {
+        const btn = document.getElementById(`btnAdd-${id}`);
+        if (!btn) return;
+        const meta = WIDGET_META[id] || { title: id.toUpperCase(), icon: 'fa-solid fa-cube' };
+
+        if (activeIds.has(id)) {
+          btn.disabled = true;
+          btn.className = "btn btn-sm text-sm bg-slate-800/40 border-slate-800 text-slate-500 cursor-not-allowed shadow-none transition";
+          btn.innerHTML = `<i class="fa-solid fa-check mr-1 text-emerald-400"></i> ${meta.title}`;
+          btn.title = `「${meta.title}」已在畫布上`;
+        } else if (totalUsedCols >= 3) {
+          btn.disabled = false;
+          btn.className = "btn btn-sm text-sm bg-slate-800/60 border-slate-700/60 text-slate-400 hover:border-amber-500 hover:text-amber-300 shadow-sm transition";
+          btn.innerHTML = `<i class="${meta.icon} mr-1"></i> ${meta.title}`;
+          btn.title = `畫布已滿 3 欄，點擊查看提示`;
+        } else {
+          btn.disabled = false;
+          btn.className = "btn btn-sm text-sm bg-slate-800/90 hover:bg-sky-900/60 border-slate-700 hover:border-sky-400 text-slate-200 hover:text-white shadow-sm transition";
+          btn.innerHTML = `<i class="${meta.icon} mr-1"></i> ${meta.title}`;
+          btn.title = `點擊添加「${meta.title}」到第 ${totalUsedCols + 1} 欄`;
+        }
+      });
+    }
+
+    function initGridStack() {
+      grid = GridStack.init({
+        column: 3,
+        maxRow: 1,
+        cellHeight: 155,
+        animate: true,
+        float: false,
+        margin: 6,
+        resizable: { handles: 'e' },
+        disableOneColumnMode: true
+      }, '#widgetGrid');
+
+      grid.on('change dragstop resizestop', function(event, items) {
+        enforceGridConstraints();
+        saveGridWidgets();
+      });
+    }
+
+    function saveGridWidgets() {
+      if (!grid) return;
+      const widgets = getActiveWidgetsFromGrid().map(w => ({
+        id: w.id,
+        x: w.x,
+        w: w.w
+      }));
+
+      currentConfig.widgets = widgets;
+      updateAddButtonsUI();
+      updateTheme(false);
+    }
+
+    function loadWidgetsIntoGrid(widgetList) {
+      if (!grid) return;
+      isInternalLayoutUpdate = true;
+      try {
+        grid.removeAll(true);
+        const gridEl = document.getElementById('widgetGrid');
+        if (gridEl) {
+          gridEl.querySelectorAll('.grid-stack-item').forEach(el => el.remove());
+        }
+
+        const list = (widgetList && widgetList.length > 0) ? widgetList : [
+          { id: "cpu", x: 0, w: 1 },
+          { id: "ram", x: 1, w: 1 },
+          { id: "gpu", x: 2, w: 1 }
+        ];
+
+        const validIds = { "cpu": true, "gpu": true, "ram": true, "music": true, "net": true };
+        const occupied = new Set();
+
+        list.forEach(w => {
+          const wid = String(w.id || '').toLowerCase();
+          if (!validIds[wid]) return;
+          let wx = Math.max(0, Math.min(2, parseInt(w.x || 0, 10)));
+          let ww = Math.max(1, Math.min(3, parseInt(w.w || 1, 10)));
+          ww = Math.min(ww, 3 - wx);
+
+          let hasCol = false;
+          for (let c = wx; c < wx + ww; c++) {
+            if (occupied.has(c)) { hasCol = true; break; }
+          }
+          if (hasCol) {
+            let freeCol = -1;
+            for (let c = 0; c < 3; c++) {
+              if (!occupied.has(c)) { freeCol = c; break; }
+            }
+            if (freeCol === -1) return;
+            wx = freeCol;
+            ww = 1;
+          }
+
+          for (let c = wx; c < wx + ww; c++) occupied.add(c);
+
+          grid.addWidget({
+            x: wx,
+            y: 0,
+            w: ww,
+            h: 1,
+            minW: 1,
+            maxW: 3,
+            id: wid,
+            content: createWidgetCardHtml(wid, ww)
+          });
+        });
+      } finally {
+        isInternalLayoutUpdate = false;
+      }
+
+      enforceGridConstraints();
+      updateAddButtonsUI();
+    }
+
+    function addWidgetToGrid(id) {
+      if (!grid) return;
+      const widgets = getActiveWidgetsFromGrid();
+
+      // 1. 防重複添加
+      if (widgets.some(w => w.id === id)) {
+        showToast(`「${WIDGET_META[id]?.title || id}」已在畫布上，無需重複添加！`, 'warning');
+        return;
+      }
+
+      // 2. 嚴格 3 欄上限檢查（3小卡、1小1中、1大卡）
+      const occupied = new Set();
+      widgets.forEach(w => {
+        for (let col = w.x; col < w.x + w.w && col < 3; col++) {
+          occupied.add(col);
+        }
+      });
+
+      let freeX = -1;
+      for (let col = 0; col < 3; col++) {
+        if (!occupied.has(col)) {
+          freeX = col;
+          break;
+        }
+      }
+
+      if (freeX === -1) {
+        showToast('畫布已滿 3 欄！請點擊卡片右上角的「⇄」直接替換，或點「✕」移除卡片後再添加。', 'warning');
+        return;
+      }
+
+      // 3. 安全添加到空餘欄位，絕不重疊
+      grid.addWidget({
+        x: freeX,
+        y: 0,
+        w: 1,
+        h: 1,
+        minW: 1,
+        maxW: 3 - freeX,
+        id: id,
+        content: createWidgetCardHtml(id, 1)
+      });
+
+      enforceGridConstraints();
+      saveGridWidgets();
+      showToast(`已添加「${WIDGET_META[id]?.title || id}」到第 ${freeX + 1} 欄`, 'success');
+    }
+
+    // ── 快速替換小工具（可原地替換未上架組件，或交換兩個已上架組件位置）────────
+    function replaceWidget(oldId, newId) {
+      if (!grid) return;
+      if (oldId === newId) {
+        showToast(`當前已經是「${WIDGET_META[newId]?.title || newId}」`, 'info');
+        return;
+      }
+
+      const widgets = getActiveWidgetsFromGrid();
+      const currentWidget = widgets.find(w => w.id === oldId);
+      if (!currentWidget) return;
+
+      const targetExisting = widgets.find(w => w.id === newId);
+      if (targetExisting) {
+        // 兩者皆在畫布上 -> 兩者直接交換位置與欄寬！
+        const origX = currentWidget.x;
+        const origW = currentWidget.w;
+        const targetX = targetExisting.x;
+        const targetW = targetExisting.w;
+
+        grid.removeWidget(currentWidget.el, true, false);
+        grid.removeWidget(targetExisting.el, true, false);
+
+        grid.addWidget({
+          x: targetX,
+          y: 0,
+          w: targetW,
+          h: 1,
+          id: oldId,
+          content: createWidgetCardHtml(oldId, targetW)
+        });
+        grid.addWidget({
+          x: origX,
+          y: 0,
+          w: origW,
+          h: 1,
+          id: newId,
+          content: createWidgetCardHtml(newId, origW)
+        });
+
+        enforceGridConstraints();
+        saveGridWidgets();
+        showToast(`已交換「${WIDGET_META[oldId]?.title || oldId}」與「${WIDGET_META[newId]?.title || newId}」的位置`, 'success');
+        return;
+      }
+
+      // 目標小工具不在畫布上 -> 原地替換，保持原欄位位置與寬度
+      const curX = currentWidget.x;
+      const curW = currentWidget.w;
+
+      grid.removeWidget(currentWidget.el, true, false);
+      grid.addWidget({
+        x: curX,
+        y: 0,
+        w: curW,
+        h: 1,
+        id: newId,
+        content: createWidgetCardHtml(newId, curW)
+      });
+
+      enforceGridConstraints();
+      saveGridWidgets();
+      showToast(`已將區塊替換為「${WIDGET_META[newId]?.title || newId}」`, 'success');
+    }
+
+    // ── 快速切換卡片欄寬（1 欄小卡、2 欄雙欄中卡、3 欄滿版大卡）────────────
+    function setWidgetWidth(id, targetW) {
+      if (!grid) return;
+      targetW = Math.max(1, Math.min(3, parseInt(targetW, 10)));
+      const widgets = getActiveWidgetsFromGrid();
+      const cur = widgets.find(w => w.id === id);
+      if (!cur) return;
+      if (cur.w === targetW) return;
+
+      let newX = cur.x;
+      if (newX + targetW > 3) {
+        newX = 3 - targetW;
+      }
+
+      const newCols = new Set();
+      for (let c = newX; c < newX + targetW; c++) newCols.add(c);
+
+      // 保留未與當前卡片新空間衝突的其它卡片
+      const remaining = widgets.filter(w => {
+        if (w.id === id) return false;
+        for (let c = w.x; c < w.x + w.w; c++) {
+          if (newCols.has(c)) return false;
+        }
+        return true;
+      });
+
+      // 如果切換為 2 欄中卡，畫布恰好剩 1 欄空位 (Column 0 或 Column 2)
+      // 若原先其它卡片被擠壓掉，智慧保留 1 個其它卡片放入剩餘空欄
+      if (targetW === 2 && remaining.length === 0) {
+        const freeCol = newX === 0 ? 2 : 0;
+        const candidate = widgets.find(w => w.id !== id);
+        if (candidate) {
+          remaining.push({ id: candidate.id, x: freeCol, w: 1 });
+        }
+      }
+
+      const newLayout = [
+        { id: id, x: newX, w: targetW },
+        ...remaining.map(w => ({ id: w.id, x: w.x, w: w.w }))
+      ];
+
+      newLayout.sort((a, b) => a.x - b.x);
+      loadWidgetsIntoGrid(newLayout);
+      saveGridWidgets();
+      const label = targetW === 1 ? '1 欄 (標準小卡)' : (targetW === 2 ? '2 欄 (雙欄中卡)' : '3 欄 (滿版大卡)');
+      showToast(`已將「${WIDGET_META[id]?.title || id}」切換為 ${label}`, 'success');
+    }
+
+    function removeWidgetFromGrid(btn) {
+      const itemEl = btn.closest('.grid-stack-item');
+      if (itemEl && grid) {
+        const inner = itemEl.querySelector('[data-widget-id]');
+        const id = inner ? inner.getAttribute('data-widget-id') : null;
+        const title = (id && WIDGET_META[id]) ? WIDGET_META[id].title : '卡片';
+
+        grid.removeWidget(itemEl, true, true);
+        enforceGridConstraints();
+        saveGridWidgets();
+        showToast(`已移除「${title}」`, 'info');
+      }
+    }
+
+    function applyWidgetLayout(presetName) {
+      const PRESET_LAYOUTS = {
+        classic: [
+          { id: "cpu", x: 0, w: 1 },
+          { id: "ram", x: 1, w: 1 },
+          { id: "gpu", x: 2, w: 1 }
+        ],
+        music_wide: [
+          { id: "cpu", x: 0, w: 1 },
+          { id: "music", x: 1, w: 2 }
+        ],
+        music_left: [
+          { id: "music", x: 0, w: 2 },
+          { id: "gpu", x: 2, w: 1 }
+        ],
+        gamer: [
+          { id: "gpu", x: 0, w: 1 },
+          { id: "cpu", x: 1, w: 1 },
+          { id: "net", x: 2, w: 1 }
+        ],
+        full_music: [
+          { id: "music", x: 0, w: 3 }
+        ]
+      };
+
+      const presetTitles = {
+        classic: "經典三卡 (1+1+1)",
+        music_wide: "聽歌電台 (中右合併)",
+        music_left: "左中合併 + GPU",
+        gamer: "極客遊戲 (GPU+CPU+NET)",
+        full_music: "滿版電台 (3 欄滿版)"
+      };
+
+      const target = PRESET_LAYOUTS[presetName] || PRESET_LAYOUTS.classic;
+      loadWidgetsIntoGrid(target);
+      saveGridWidgets();
+      showToast(`已套用「${presetTitles[presetName] || presetName}」佈局`, 'success');
+    }
+
+    // ── 1. 副屏實體動態流光 (LCD Screen FX) 控制 ────────────────────────────
+    function setAmbientMode(mode) {
+      currentConfig.ambient_fx = mode;
+      updateAmbientButtonsUI(mode);
+      updateTheme(false);
+    }
+
+    function setAmbientOpacity(val) {
+      document.getElementById('fxOpacityVal').textContent = `${val}%`;
+      currentConfig.ambient_opacity = parseFloat(val) / 100.0;
+      clearTimeout(sliderDebounceTimer);
+      sliderDebounceTimer = setTimeout(() => {
+        updateTheme(false);
+      }, 80);
+    }
+
+    function updateAmbientButtonsUI(mode) {
+      ['waves', 'particles', 'dual', 'off'].forEach(m => {
+        const btn = document.getElementById(`fxBtn-${m}`);
+        if (btn) {
+          if (mode === m) {
+            btn.className = "btn btn-sm text-sm btn-info text-white flex items-center justify-center space-x-1 shadow-sm";
+          } else {
+            btn.className = "btn btn-sm text-sm btn-outline hover:btn-info text-slate-300 flex items-center justify-center space-x-1";
+          }
+        }
+      });
+    }
+
+    // ── 2. 初始化與業務邏輯 ────────────────────────────────────────────────
+    let isInitialLoading = true;
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      isInitialLoading = true;
+      initGridStack();
+      await Promise.all([loadConfig(), loadAioConfig()]);
+      isInitialLoading = false;
+      startStatusPolling();
+    });
+
+    async function loadConfig() {
+      try {
+        const res = await fetch('/api/config');
+        currentConfig = await res.json();
+        applyConfigToUI(currentConfig);
+      } catch (e) {
+        console.error('Failed to load config:', e);
+      }
+    }
+
+    function applyConfigToUI(cfg) {
+      if (!cfg) return;
+
+      const fxMode = cfg.ambient_fx || 'off';
+      currentConfig.ambient_fx = fxMode;
+      updateAmbientButtonsUI(fxMode);
+
+      const fxOp = Math.round((cfg.ambient_opacity !== undefined ? cfg.ambient_opacity : 0.55) * 100);
+      document.getElementById('fxOpacityInput').value = fxOp;
+      document.getElementById('fxOpacityVal').textContent = `${fxOp}%`;
+
+      document.getElementById('canvasBgInput').value = cfg.canvas_bg || '#120a05';
+      document.getElementById('canvasBgVal').textContent = cfg.canvas_bg || '#120a05';
+
+      document.getElementById('cardBgInput').value = cfg.card_bg || '#241208';
+      document.getElementById('cardBgVal').textContent = cfg.card_bg || '#241208';
+
+      const opacity = Math.round((cfg.card_opacity !== undefined ? cfg.card_opacity : 0.85) * 100);
+      document.getElementById('cardOpacityInput').value = opacity;
+      document.getElementById('cardOpacityVal').textContent = `${opacity}%`;
+
+      document.getElementById('cardBorderInput').value = cfg.card_border || '#7c2d12';
+      document.getElementById('cardBorderVal').textContent = cfg.card_border || '#7c2d12';
+
+      document.getElementById('textPrimaryInput').value = cfg.text_primary || '#fed7aa';
+      document.getElementById('textSecondaryInput').value = cfg.text_secondary || '#fdba74';
+
+      document.getElementById('cpuAccentInput').value = cfg.cpu_accent || '#f59e0b';
+      document.getElementById('ramAccentInput').value = cfg.ram_accent || '#d97706';
+      document.getElementById('gpuAccentInput').value = cfg.gpu_accent || '#ea580c';
+
+      if (cfg.bg_image) {
+        document.getElementById('bgStatusText').textContent = '已套用自訂圖片';
+        document.getElementById('bgStatusText').classList.add('text-sky-400');
+        document.getElementById('bgOptions').classList.remove('hidden');
+      } else {
+        document.getElementById('bgStatusText').textContent = '未上傳';
+        document.getElementById('bgStatusText').classList.remove('text-sky-400');
+        document.getElementById('bgOptions').classList.add('hidden');
+      }
+
+      const dim = Math.round((cfg.bg_dim || 0) * 100);
+      document.getElementById('bgDimInput').value = dim;
+      document.getElementById('bgDimVal').textContent = `${dim}%`;
+
+      const blur = cfg.bg_blur || 0;
+      document.getElementById('bgBlurInput').value = blur;
+      document.getElementById('bgBlurVal').textContent = `${blur} px`;
+
+      // 安全匹配 Rotate
+      const rot = String(cfg.rotate || 270);
+      const rotSelect = document.getElementById('rotateSelect');
+      rotSelect.value = ["0", "90", "180", "270"].includes(rot) ? rot : "270";
+
+      // 安全匹配 FPS (避免 2 vs 2.0 匹配失敗)
+      const targetFps = parseFloat(cfg.fps) || 2.0;
+      const fpsSelect = document.getElementById('fpsSelect');
+      let fpsMatched = false;
+      for (let opt of fpsSelect.options) {
+        if (Math.abs(parseFloat(opt.value) - targetFps) < 0.05) {
+          fpsSelect.value = opt.value;
+          fpsMatched = true;
+          break;
+        }
+      }
+      if (!fpsMatched) fpsSelect.value = "2.0";
+
+      // 自動同步開關
+      const syncCheck = document.getElementById('autoSyncCheckbox');
+      syncCheck.checked = cfg.sync_to_screen !== false;
+
+      // 載入 GridStack 卡片排版（必須在所有參數與顏色輸入框初始化完畢後執行）
+      if (cfg.widgets) {
+        loadWidgetsIntoGrid(cfg.widgets);
+      }
+    }
+
+    function collectUIConfig() {
+      const cardOp = parseFloat(document.getElementById('cardOpacityInput').value);
+      const bgDim = parseFloat(document.getElementById('bgDimInput').value);
+      const bgBlur = parseInt(document.getElementById('bgBlurInput').value, 10);
+      const rot = parseInt(document.getElementById('rotateSelect').value, 10);
+      const fps = parseFloat(document.getElementById('fpsSelect').value);
+      const fxOp = parseFloat(document.getElementById('fxOpacityInput').value);
+
+      const getVal = (id, fallbackKey, fallbackDef) => {
+        const el = document.getElementById(id);
+        const val = el ? el.value : '';
+        return val || (currentConfig ? currentConfig[fallbackKey] : null) || fallbackDef;
+      };
+
+      return {
+        ...currentConfig,
+        ambient_fx: currentConfig.ambient_fx || 'off',
+        ambient_opacity: isNaN(fxOp) ? (currentConfig.ambient_opacity ?? 0.55) : fxOp / 100.0,
+        canvas_bg: getVal('canvasBgInput', 'canvas_bg', '#120a05'),
+        card_bg: getVal('cardBgInput', 'card_bg', '#241208'),
+        card_opacity: isNaN(cardOp) ? (currentConfig.card_opacity ?? 0.85) : cardOp / 100.0,
+        card_border: getVal('cardBorderInput', 'card_border', '#7c2d12'),
+        text_primary: getVal('textPrimaryInput', 'text_primary', '#fed7aa'),
+        text_secondary: getVal('textSecondaryInput', 'text_secondary', '#fdba74'),
+        cpu_accent: getVal('cpuAccentInput', 'cpu_accent', '#f59e0b'),
+        ram_accent: getVal('ramAccentInput', 'ram_accent', '#d97706'),
+        gpu_accent: getVal('gpuAccentInput', 'gpu_accent', '#ea580c'),
+        bg_dim: isNaN(bgDim) ? (currentConfig.bg_dim ?? 0.0) : bgDim / 100.0,
+        bg_blur: isNaN(bgBlur) ? (currentConfig.bg_blur ?? 0) : bgBlur,
+        rotate: isNaN(rot) ? (currentConfig.rotate ?? 270) : rot,
+        fps: isNaN(fps) ? (currentConfig.fps ?? 2.0) : fps,
+        sync_to_screen: document.getElementById('autoSyncCheckbox') ? document.getElementById('autoSyncCheckbox').checked : true
+      };
+    }
+
+    function onSliderInput(type) {
+      if (type === 'cardOpacity') {
+        const val = document.getElementById('cardOpacityInput').value;
+        document.getElementById('cardOpacityVal').textContent = `${val}%`;
+      } else if (type === 'bgDim') {
+        const val = document.getElementById('bgDimInput').value;
+        document.getElementById('bgDimVal').textContent = `${val}%`;
+      } else if (type === 'bgBlur') {
+        const val = document.getElementById('bgBlurInput').value;
+        document.getElementById('bgBlurVal').textContent = `${val} px`;
+      }
+
+      // 防抖發送更新
+      clearTimeout(sliderDebounceTimer);
+      sliderDebounceTimer = setTimeout(() => {
+        updateTheme(false);
+      }, 80);
+    }
+
+    async function updateTheme(showSpinner = true) {
+      if (isInitialLoading) return;
+      const cfg = collectUIConfig();
+
+      document.getElementById('canvasBgVal').textContent = cfg.canvas_bg;
+      document.getElementById('cardBgVal').textContent = cfg.card_bg;
+      document.getElementById('cardBorderVal').textContent = cfg.card_border;
+
+      currentConfig = cfg;
+
+      try {
+        await fetch('/api/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(cfg)
+        });
+        refreshPreview(showSpinner);
+      } catch (e) {
+        console.error('Update config failed:', e);
+      }
+    }
+
+    function toggleAutoSync(checked) {
+      currentConfig.sync_to_screen = checked;
+      updateTheme(false);
+    }
+
+    function applyPreset(name) {
+      if (!PRESETS[name]) return;
+      activePreset = name;
+
+      // 更新卡片外觀狀態
+      document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('active'));
+      const activeBtn = document.getElementById(`preset-${name}`);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      const p = PRESETS[name];
+      currentConfig = {
+        ...currentConfig,
+        ...p,
+        sync_to_screen: document.getElementById('autoSyncCheckbox').checked
+      };
+
+      applyConfigToUI(currentConfig);
+      updateTheme(true);
+    }
+
+    async function uploadBackgroundImage(input) {
+      if (!input.files || input.files.length === 0) return;
+      const file = input.files[0];
+      const formData = new FormData();
+      formData.append('image', file);
+
+      try {
+        const res = await fetch('/api/upload_bg', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (data.success) {
+          currentConfig.bg_image = data.path;
+          document.getElementById('bgStatusText').textContent = '已套用自訂圖片';
+          document.getElementById('bgStatusText').classList.add('text-sky-400');
+          document.getElementById('bgOptions').classList.remove('hidden');
+          refreshPreview(true);
+        }
+      } catch (e) {
+        alert('上傳失敗: ' + e);
+      }
+    }
+
+    async function removeBackgroundImage() {
+      try {
+        await fetch('/api/remove_bg', { method: 'POST' });
+        currentConfig.bg_image = null;
+        document.getElementById('bgStatusText').textContent = '未上傳';
+        document.getElementById('bgStatusText').classList.remove('text-sky-400');
+        document.getElementById('bgOptions').classList.add('hidden');
+        refreshPreview(true);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function pushToScreen() {
+      const btn = document.getElementById('pushBtn');
+      const origHtml = btn.innerHTML;
+      btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i><span>上傳推流中...</span>`;
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/push', { method: 'POST' });
+        const data = await res.json();
+
+        if (data.success && data.connected) {
+          btn.innerHTML = `<i class="fa-solid fa-check text-emerald-300"></i><span>副屏已同步！</span>`;
+          btn.classList.add('btn-success');
+        } else if (data.connected === false) {
+          btn.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-200"></i><span>副屏未連線 (已存)</span>`;
+          btn.classList.add('btn-warning');
+        } else {
+          btn.innerHTML = `<i class="fa-solid fa-xmark text-red-300"></i><span>${data.error || '上傳失敗'}</span>`;
+          btn.classList.add('btn-error');
+        }
+      } catch (e) {
+        btn.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-red-300"></i><span>網路連線異常</span>`;
+        btn.classList.add('btn-error');
+      }
+
+      setTimeout(() => {
+        btn.innerHTML = origHtml;
+        btn.classList.remove('btn-success', 'btn-warning', 'btn-error');
+        btn.disabled = false;
+      }, 2000);
+    }
+
+    function refreshPreview(showSpinner = false) {
+      const spinner = document.getElementById('previewSpinner');
+      if (showSpinner) {
+        spinner.classList.remove('opacity-0');
+        setTimeout(() => spinner.classList.add('opacity-0'), 250);
+      }
+      const img = document.getElementById('screenPreview');
+      if (!img.src || img.src === '' || img.src.endsWith('/')) {
+        img.src = '/api/stream';
+      }
+    }
+
+    function resetStream() {
+      const img = document.getElementById('screenPreview');
+      img.src = '';
+      setTimeout(() => {
+        img.src = `/api/stream?t=${Date.now()}`;
+      }, 100);
+      showToast('已重置副屏即時預覽串流', 'info');
+    }
+
+    // ── 卡片下拉選單手動切換（避免被 GridStack 拖曳攔截導致 :focus-within 失效）──
+    function closeAllCardDropdowns() {
+      document.querySelectorAll('.card-dropdown.dropdown-open').forEach(d => {
+        d.classList.remove('dropdown-open');
+        const gsItem = d.closest('.grid-stack-item');
+        if (gsItem) gsItem.style.zIndex = '';
+      });
+    }
+
+    function toggleCardDropdown(btn) {
+      const dd = btn.closest('.card-dropdown');
+      if (!dd) return;
+      const wasOpen = dd.classList.contains('dropdown-open');
+      closeAllCardDropdowns();
+      if (!wasOpen) {
+        dd.classList.add('dropdown-open');
+        const gsItem = dd.closest('.grid-stack-item');
+        if (gsItem) gsItem.style.zIndex = '50';
+      }
+    }
+
+    document.addEventListener('click', () => closeAllCardDropdowns());
+
+    // ── 3. 雙屏分頁切換 & 銀欣 480x480 水冷頭控制 ──────────────────────────
+    let activeScreenTab = 'chassis'; // 'chassis' | 'aio'
+    let aioConfig = {};
+    let aioSliderTimer = null;
+    let lastChassisStatus = null;
+    let lastAioStatus = null;
+
+    function switchScreenTab(tab) {
+      activeScreenTab = tab;
+      const isAio = (tab === 'aio');
+
+      document.getElementById('tabBtn-chassis').classList.toggle('active', !isAio);
+      document.getElementById('tabBtn-aio').classList.toggle('active', isAio);
+
+      const chassisWs = document.getElementById('chassisWorkspace');
+      const aioWs = document.getElementById('aioWorkspace');
+
+      if (isAio) {
+        chassisWs.classList.add('hidden');
+        aioWs.classList.remove('hidden');
+        aioWs.classList.add('flex');
+
+        document.getElementById('headerResBadge').textContent = '480×480';
+        document.getElementById('autoSyncCheckbox').checked = (aioConfig.sync_to_screen !== false);
+
+        document.getElementById('screenPreview').src = '';
+        document.getElementById('aioScreenPreview').src = `/api/aio/stream?t=${Date.now()}`;
+        renderAioCallouts();
+      } else {
+        aioWs.classList.add('hidden');
+        aioWs.classList.remove('flex');
+        chassisWs.classList.remove('hidden');
+
+        document.getElementById('headerResBadge').textContent = '960×360';
+        document.getElementById('autoSyncCheckbox').checked = (currentConfig.sync_to_screen !== false);
+
+        document.getElementById('aioScreenPreview').src = '';
+        document.getElementById('screenPreview').src = `/api/stream?t=${Date.now()}`;
+      }
+
+      renderActiveStatusBadge();
+    }
+
+    function onHeaderSyncToggle(checked) {
+      if (activeScreenTab === 'aio') {
+        aioConfig.sync_to_screen = checked;
+        updateAioTheme();
+      } else {
+        toggleAutoSync(checked);
+      }
+    }
+
+    function onHeaderPushClick() {
+      if (activeScreenTab === 'aio') {
+        pushToAio();
+      } else {
+        pushToScreen();
+      }
+    }
+
+    const AIO_METRIC_OPTIONS = [
+      { value: 'cpu_usage', label: 'CPU 使用率 (%)' },
+      { value: 'cpu_temp',  label: 'CPU 溫度 (°C)' },
+      { value: 'cpu_power', label: 'CPU 瓦數 (W)' },
+      { value: 'cpu_fan',   label: 'CPU 風扇 (RPM)' },
+      { value: 'gpu_temp',  label: 'GPU 溫度 (°C)' },
+      { value: 'gpu_usage', label: 'GPU 使用率 (%)' },
+      { value: 'gpu_fan',   label: 'GPU 風扇 (RPM)' },
+      { value: 'ram',       label: '記憶體佔用 (%)' },
+      { value: 'clock',     label: '數位大時鐘' }
+    ];
+
+    const AIO_DEFAULT_WIDGETS = [
+      { id: 'w1', x: 0, y: 0, w: 2, h: 1, metric: 'cpu_usage', color: '#00e5ff' },
+      { id: 'w2', x: 0, y: 1, w: 1, h: 1, metric: 'cpu_temp',  color: '#ff8800' },
+      { id: 'w3', x: 1, y: 1, w: 1, h: 1, metric: 'cpu_power', color: '#a855f7' }
+    ];
+
+    function getAioPosLabel(item) {
+      if (item.w === 2 && item.h === 2) return '滿版 2×2';
+      if (item.w === 2 && item.h === 1) return item.y === 0 ? '上方橫跨 2×1' : '下方橫跨 2×1';
+      if (item.w === 1 && item.h === 2) return item.x === 0 ? '左側直跨 1×2' : '右側直跨 1×2';
+      if (item.x === 0 && item.y === 0) return '左上 1×1';
+      if (item.x === 1 && item.y === 0) return '右上 1×1';
+      if (item.x === 0 && item.y === 1) return '左下 1×1';
+      return '右下 1×1';
+    }
+
+    function buildAioCalloutHtml(item, side) {
+      const posLabel = getAioPosLabel(item);
+      const col = item.color || '#00e5ff';
+      const opts = AIO_METRIC_OPTIONS.map(o =>
+        `<option value="${o.value}" ${item.metric === o.value ? 'selected' : ''}>${o.label}</option>`
+      ).join('');
+
+      const arrowRight = `
+        <div class="hidden lg:flex items-center w-11 shrink-0 transition" style="color:${col}">
+          <svg viewBox="0 0 44 20" class="w-full h-5 overflow-visible">
+            <line x1="0" y1="10" x2="36" y2="10" stroke="currentColor" stroke-width="2" stroke-dasharray="4 3"/>
+            <polygon points="34,5 44,10 34,15" fill="currentColor"/>
+          </svg>
+        </div>`;
+
+      const arrowLeft = `
+        <div class="hidden lg:flex items-center w-11 shrink-0 transition" style="color:${col}">
+          <svg viewBox="0 0 44 20" class="w-full h-5 overflow-visible">
+            <polygon points="10,5 0,10 10,15" fill="currentColor"/>
+            <line x1="8" y1="10" x2="44" y2="10" stroke="currentColor" stroke-width="2" stroke-dasharray="4 3"/>
+          </svg>
+        </div>`;
+
+      const sizeBtn = (tw, th, label) => {
+        const active = (item.w === tw && item.h === th);
+        return `<button type="button" onclick="resizeAioWidget('${item.id}', ${tw}, ${th})" class="btn btn-sm h-8 min-h-0 px-2.5 text-sm ${active ? 'btn-info text-white' : 'btn-ghost bg-slate-800/80 text-slate-300 hover:bg-slate-700'}">${label}</button>`;
+      };
+
+      const card = `
+        <div class="flex-1 p-3 rounded-xl glass-card shadow-lg space-y-2 transition" style="border: 1px solid ${col}66;">
+          <div class="flex items-center justify-between gap-2 border-b border-slate-800/90 pb-1.5">
+            <div class="flex items-center space-x-1.5">
+              <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background:${col}"></span>
+              <span class="text-base font-bold text-slate-100">${posLabel}</span>
+            </div>
+            <div class="flex items-center space-x-1.5">
+              <input type="color" value="${col}" onchange="updateAioWidgetField('${item.id}', 'color', this.value)" style="width:32px;height:32px;" title="修改此區塊外框與進度條顏色">
+              <button type="button" onclick="removeAioWidget('${item.id}')" class="btn btn-ghost btn-sm text-slate-400 hover:text-rose-400 px-2 h-8 min-h-0" title="移除此區塊">
+                <i class="fa-solid fa-xmark text-base"></i>
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <select onchange="updateAioWidgetField('${item.id}', 'metric', this.value)" class="select select-bordered select-sm text-sm w-full bg-slate-900 text-slate-100 font-medium">
+              ${opts}
+            </select>
+          </div>
+
+          <div class="flex items-center justify-between gap-1 pt-0.5">
+            <span class="text-sm text-slate-400">合併尺寸：</span>
+            <div class="flex items-center space-x-1">
+              ${sizeBtn(1, 1, '1×1')}
+              ${sizeBtn(2, 1, '橫2×1')}
+              ${sizeBtn(1, 2, '直1×2')}
+              ${sizeBtn(2, 2, '滿2×2')}
+            </div>
+          </div>
+        </div>`;
+
+      return `<div class="flex items-center">${side === 'right' ? arrowLeft + card : card + arrowRight}</div>`;
+    }
+
+    function buildEmptyAioSlotHtml(gx, gy, side) {
+      const posName = (gx === 0 && gy === 0) ? '左上' : (gx === 1 && gy === 0) ? '右上' : (gx === 0 && gy === 1) ? '左下' : '右下';
+      const padCls = side === 'right' ? 'lg:ml-11' : 'lg:mr-11';
+      return `
+        <button type="button" onclick="addAioWidgetAt(${gx}, ${gy})" class="${padCls} p-4 rounded-xl border border-dashed border-slate-700/80 hover:border-cyan-400 bg-slate-900/35 hover:bg-slate-900/70 text-slate-400 hover:text-cyan-300 transition flex items-center justify-center space-x-2 text-base">
+          <i class="fa-solid fa-plus"></i>
+          <span>在「${posName} (${gx},${gy})」新增監控區塊</span>
+        </button>`;
+    }
+
+    function renderAioCallouts() {
+      const leftBox = document.getElementById('aioLeftCallouts');
+      const rightBox = document.getElementById('aioRightCallouts');
+      if (!leftBox || !rightBox) return;
+
+      const widgets = Array.isArray(aioConfig.widgets) ? aioConfig.widgets : AIO_DEFAULT_WIDGETS;
+      const occupied = new Set();
+      widgets.forEach(item => {
+        for (let dx = 0; dx < item.w; dx++) {
+          for (let dy = 0; dy < item.h; dy++) {
+            occupied.add(`${item.x + dx},${item.y + dy}`);
+          }
+        }
+      });
+
+      const findWidgetAt = (gx, gy) => widgets.find(w => w.x === gx && w.y === gy);
+
+      const buildSideColumn = (gx, side) => {
+        const wTop = findWidgetAt(gx, 0);
+        const wBot = findWidgetAt(gx, 1);
+
+        // If top block spans both rows (1x2 tall or 2x2 full), span both grid rows centered
+        if (wTop && wTop.h === 2) {
+          return `<div class="row-span-2 self-center">${buildAioCalloutHtml(wTop, side)}</div>`;
+        }
+
+        const row1 = wTop
+          ? `<div class="row-start-1">${buildAioCalloutHtml(wTop, side)}</div>`
+          : (!occupied.has(`${gx},0`)
+              ? `<div class="row-start-1">${buildEmptyAioSlotHtml(gx, 0, side)}</div>`
+              : `<div class="row-start-1"></div>`);
+
+        const row2 = wBot
+          ? `<div class="row-start-2">${buildAioCalloutHtml(wBot, side)}</div>`
+          : (!occupied.has(`${gx},1`)
+              ? `<div class="row-start-2">${buildEmptyAioSlotHtml(gx, 1, side)}</div>`
+              : `<div class="row-start-2"></div>`);
+
+        return row1 + row2;
+      };
+
+      leftBox.innerHTML = buildSideColumn(0, 'left');
+      rightBox.innerHTML = buildSideColumn(1, 'right');
+    }
+
+    function updateAioWidgetField(id, field, value) {
+      const widgets = (aioConfig.widgets || []).map(w => ({ ...w }));
+      const target = widgets.find(w => w.id === id);
+      if (!target) return;
+      target[field] = value;
+      aioConfig.widgets = widgets;
+      renderAioCallouts();
+      updateAioTheme();
+    }
+
+    function resizeAioWidget(id, targetW, targetH) {
+      const widgets = (aioConfig.widgets || []).map(w => ({ ...w }));
+      const target = widgets.find(w => w.id === id);
+      if (!target) return;
+
+      let nx = target.x;
+      let ny = target.y;
+      if (nx + targetW > 2) nx = 2 - targetW;
+      if (ny + targetH > 2) ny = 2 - targetH;
+
+      const newCells = new Set();
+      for (let dx = 0; dx < targetW; dx++) {
+        for (let dy = 0; dy < targetH; dy++) {
+          newCells.add(`${nx + dx},${ny + dy}`);
+        }
+      }
+
+      // 保留不重疊的其它區塊
+      const kept = widgets.filter(w => {
+        if (w.id === id) return false;
+        for (let dx = 0; dx < w.w; dx++) {
+          for (let dy = 0; dy < w.h; dy++) {
+            if (newCells.has(`${w.x + dx},${w.y + dy}`)) return false;
+          }
+        }
+        return true;
+      });
+
+      target.x = nx;
+      target.y = ny;
+      target.w = targetW;
+      target.h = targetH;
+      aioConfig.widgets = [target, ...kept];
+      renderAioCallouts();
+      updateAioTheme();
+      showToast(`已將區塊調整為 ${targetW}×${targetH}`, 'success');
+    }
+
+    function addAioWidgetAt(gx, gy) {
+      const widgets = (aioConfig.widgets || []).map(w => ({ ...w }));
+      const usedMetrics = new Set(widgets.map(w => w.metric));
+      const nextMetric = (AIO_METRIC_OPTIONS.find(o => !usedMetrics.has(o.value)) || AIO_METRIC_OPTIONS[0]).value;
+      const palette = ['#00e5ff', '#ff8800', '#a855f7', '#10b981'];
+      const newItem = {
+        id: 'w' + Date.now().toString(36).slice(-4),
+        x: gx, y: gy, w: 1, h: 1,
+        metric: nextMetric,
+        color: palette[widgets.length % palette.length]
+      };
+      aioConfig.widgets = [...widgets, newItem];
+      renderAioCallouts();
+      updateAioTheme();
+    }
+
+    function removeAioWidget(id) {
+      aioConfig.widgets = (aioConfig.widgets || []).filter(w => w.id !== id);
+      renderAioCallouts();
+      updateAioTheme();
+    }
+
+    function applyAioLayoutPreset(name) {
+      const presets = {
+        cpu_trio: [
+          { id: 'w1', x: 0, y: 0, w: 2, h: 1, metric: 'cpu_usage', color: '#00e5ff' },
+          { id: 'w2', x: 0, y: 1, w: 1, h: 1, metric: 'cpu_temp',  color: '#ff8800' },
+          { id: 'w3', x: 1, y: 1, w: 1, h: 1, metric: 'cpu_power', color: '#a855f7' }
+        ],
+        quad_4: [
+          { id: 'w1', x: 0, y: 0, w: 1, h: 1, metric: 'cpu_usage', color: '#00e5ff' },
+          { id: 'w2', x: 1, y: 0, w: 1, h: 1, metric: 'cpu_temp',  color: '#ff8800' },
+          { id: 'w3', x: 0, y: 1, w: 1, h: 1, metric: 'cpu_power', color: '#a855f7' },
+          { id: 'w4', x: 1, y: 1, w: 1, h: 1, metric: 'gpu_temp',  color: '#10b981' }
+        ],
+        dual_rows: [
+          { id: 'w1', x: 0, y: 0, w: 2, h: 1, metric: 'cpu_temp',  color: '#ff8800' },
+          { id: 'w2', x: 0, y: 1, w: 2, h: 1, metric: 'gpu_temp',  color: '#00e5ff' }
+        ],
+        dual_cols: [
+          { id: 'w1', x: 0, y: 0, w: 1, h: 2, metric: 'cpu_usage', color: '#00e5ff' },
+          { id: 'w2', x: 1, y: 0, w: 1, h: 2, metric: 'cpu_power', color: '#a855f7' }
+        ],
+        left_tall: [
+          { id: 'w1', x: 0, y: 0, w: 1, h: 2, metric: 'cpu_usage', color: '#00e5ff' },
+          { id: 'w2', x: 1, y: 0, w: 1, h: 1, metric: 'cpu_temp',  color: '#ff8800' },
+          { id: 'w3', x: 1, y: 1, w: 1, h: 1, metric: 'cpu_power', color: '#a855f7' }
+        ]
+      };
+      aioConfig.widgets = (presets[name] || presets.cpu_trio).map(w => ({ ...w }));
+      renderAioCallouts();
+      updateAioTheme();
+      showToast('已套用水冷頭 2×2 預設佈局', 'success');
+    }
+
+    async function loadAioConfig() {
+      try {
+        const res = await fetch('/api/aio/config');
+        aioConfig = await res.json();
+        if (!Array.isArray(aioConfig.widgets) || aioConfig.widgets.length === 0) {
+          aioConfig.widgets = AIO_DEFAULT_WIDGETS.map(w => ({ ...w }));
+        }
+        applyAioConfigToUI(aioConfig);
+      } catch (e) {
+        console.error('Failed to load AIO config:', e);
+      }
+    }
+
+    function applyAioConfigToUI(cfg) {
+      if (!cfg) return;
+      document.getElementById('aioAmbientRingInput').checked = (cfg.ambient_ring !== false);
+      document.getElementById('aioCanvasBgInput').value = cfg.canvas_bg || '#080c16';
+      document.getElementById('aioCanvasBgVal').textContent = cfg.canvas_bg || '#080c16';
+      document.getElementById('aioAccentPrimaryInput').value = cfg.accent_primary || '#00e5ff';
+      document.getElementById('aioTextPrimaryInput').value = cfg.text_primary || '#f8fafc';
+      document.getElementById('aioTextSecondaryInput').value = cfg.text_secondary || '#94a3b8';
+
+      if (cfg.bg_image) {
+        document.getElementById('aioBgStatusText').textContent = '已套用方形桌布';
+        document.getElementById('aioBgStatusText').classList.add('text-emerald-400');
+        document.getElementById('aioBgOptions').classList.remove('hidden');
+      } else {
+        document.getElementById('aioBgStatusText').textContent = '未上傳';
+        document.getElementById('aioBgStatusText').classList.remove('text-emerald-400');
+        document.getElementById('aioBgOptions').classList.add('hidden');
+      }
+
+      const dim = Math.round((cfg.bg_dim ?? 0.35) * 100);
+      document.getElementById('aioBgDimInput').value = dim;
+      document.getElementById('aioBgDimVal').textContent = `${dim}%`;
+
+      const blur = cfg.bg_blur ?? 0;
+      document.getElementById('aioBgBlurInput').value = blur;
+      document.getElementById('aioBgBlurVal').textContent = `${blur} px`;
+
+      const q = cfg.quality ?? 88;
+      document.getElementById('aioQualityInput').value = q;
+      document.getElementById('aioQualityVal').textContent = `${q}`;
+
+      const rot = String(cfg.rotate ?? 0);
+      document.getElementById('aioRotateSelect').value = ['0', '90', '180', '270'].includes(rot) ? rot : '0';
+
+      const targetFps = parseFloat(cfg.fps) || 10.0;
+      const fpsSel = document.getElementById('aioFpsSelect');
+      let matched = false;
+      for (let opt of fpsSel.options) {
+        if (Math.abs(parseFloat(opt.value) - targetFps) < 0.05) {
+          fpsSel.value = opt.value;
+          matched = true;
+          break;
+        }
+      }
+      if (!matched) fpsSel.value = '10.0';
+
+      renderAioCallouts();
+    }
+
+    function onAioSliderInput(kind) {
+      if (kind === 'dim') {
+        document.getElementById('aioBgDimVal').textContent = `${document.getElementById('aioBgDimInput').value}%`;
+      } else if (kind === 'blur') {
+        document.getElementById('aioBgBlurVal').textContent = `${document.getElementById('aioBgBlurInput').value} px`;
+      } else if (kind === 'quality') {
+        document.getElementById('aioQualityVal').textContent = `${document.getElementById('aioQualityInput').value}`;
+      }
+      clearTimeout(aioSliderTimer);
+      aioSliderTimer = setTimeout(() => updateAioTheme(), 80);
+    }
+
+    async function updateAioTheme() {
+      if (isInitialLoading) return;
+      const cfg = {
+        ...aioConfig,
+        ambient_ring: document.getElementById('aioAmbientRingInput').checked,
+        canvas_bg: document.getElementById('aioCanvasBgInput').value,
+        accent_primary: document.getElementById('aioAccentPrimaryInput').value,
+        text_primary: document.getElementById('aioTextPrimaryInput').value,
+        text_secondary: document.getElementById('aioTextSecondaryInput').value,
+        bg_dim: parseFloat(document.getElementById('aioBgDimInput').value) / 100.0,
+        bg_blur: parseInt(document.getElementById('aioBgBlurInput').value, 10),
+        quality: parseInt(document.getElementById('aioQualityInput').value, 10),
+        rotate: parseInt(document.getElementById('aioRotateSelect').value, 10),
+        fps: parseFloat(document.getElementById('aioFpsSelect').value),
+        sync_to_screen: activeScreenTab === 'aio'
+          ? document.getElementById('autoSyncCheckbox').checked
+          : (aioConfig.sync_to_screen !== false)
+      };
+      document.getElementById('aioCanvasBgVal').textContent = cfg.canvas_bg;
+      aioConfig = cfg;
+
+      try {
+        await fetch('/api/aio/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(cfg)
+        });
+      } catch (e) {
+        console.error('Update AIO config failed:', e);
+      }
+    }
+
+    async function uploadAioBg(input) {
+      if (!input.files || input.files.length === 0) return;
+      const fd = new FormData();
+      fd.append('image', input.files[0]);
+      try {
+        const res = await fetch('/api/aio/upload_bg', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.success) {
+          aioConfig.bg_image = data.path;
+          document.getElementById('aioBgStatusText').textContent = '已套用圓形桌布';
+          document.getElementById('aioBgStatusText').classList.add('text-cyan-400');
+          document.getElementById('aioBgOptions').classList.remove('hidden');
+          showToast('已更新銀欣 E360MAX 方形桌布', 'success');
+        }
+      } catch (e) {
+        showToast('上傳桌布失敗: ' + e, 'error');
+      }
+    }
+
+    async function removeAioBg() {
+      try {
+        await fetch('/api/aio/remove_bg', { method: 'POST' });
+        aioConfig.bg_image = null;
+        document.getElementById('aioBgStatusText').textContent = '未上傳';
+        document.getElementById('aioBgStatusText').classList.remove('text-cyan-400');
+        document.getElementById('aioBgOptions').classList.add('hidden');
+        showToast('已移除水冷頭桌布', 'info');
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function pushToAio() {
+      const btn = document.getElementById('pushBtn');
+      const origHtml = btn.innerHTML;
+      btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i><span>推送水冷頭...</span>`;
+      btn.disabled = true;
+      try {
+        const res = await fetch('/api/aio/push', { method: 'POST' });
+        const data = await res.json();
+        if (data.success && data.connected) {
+          btn.innerHTML = `<i class="fa-solid fa-check text-emerald-300"></i><span>水冷頭已同步！</span>`;
+          btn.classList.add('btn-success');
+        } else {
+          btn.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-200"></i><span>水冷頭未連線</span>`;
+          btn.classList.add('btn-warning');
+        }
+      } catch (e) {
+        btn.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-red-300"></i><span>連線異常</span>`;
+        btn.classList.add('btn-error');
+      }
+      setTimeout(() => {
+        btn.innerHTML = origHtml;
+        btn.classList.remove('btn-success', 'btn-warning', 'btn-error');
+        btn.disabled = false;
+      }, 2000);
+    }
+
+    function resetAioStream() {
+      const img = document.getElementById('aioScreenPreview');
+      img.src = '';
+      setTimeout(() => {
+        img.src = `/api/aio/stream?t=${Date.now()}`;
+      }, 100);
+      showToast('已重置水冷頭即時預覽串流', 'info');
+    }
+
+    function renderActiveStatusBadge() {
+      const badge = document.getElementById('statusBadge');
+      const dot = document.getElementById('statusDot');
+      const txt = document.getElementById('statusText');
+      if (activeScreenTab === 'aio') {
+        const st = lastAioStatus;
+        if (!st) return;
+        if (st.connected) {
+          dot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0";
+          const kbStr = st.last_kb ? ` · ${st.last_kb}KB` : '';
+          txt.textContent = `已連線 · ${st.fps.toFixed(0)} FPS${kbStr}`;
+          txt.className = "text-emerald-300 font-mono text-sm";
+          if (badge) badge.title = `銀欣水冷頭 UUID: ${st.uuid || '--'} | 目標 ${st.fps} FPS / 實測 ${(st.actual_fps || 0).toFixed(1)} FPS`;
+        } else {
+          dot.className = "w-2 h-2 rounded-full bg-amber-400 shrink-0";
+          txt.textContent = st.sync_to_screen === false ? "已暫停同步" : "水冷頭未連線";
+          txt.className = "text-amber-300 font-mono text-sm";
+          if (badge) badge.title = st.error || '未偵測到銀欣水冷頭';
+        }
+      } else {
+        const st = lastChassisStatus;
+        if (!st) return;
+        if (st.connected) {
+          dot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0";
+          txt.textContent = `已連線 · ${st.fps.toFixed(0)} FPS`;
+          txt.className = "text-emerald-300 font-mono text-sm";
+          if (badge) badge.title = `機箱副屏目標 ${st.fps} FPS / 實測 ${(st.actual_fps || 0).toFixed(1)} FPS`;
+        } else {
+          dot.className = "w-2 h-2 rounded-full bg-amber-400 shrink-0";
+          txt.textContent = st.error ? `副屏未連線` : "尋找設備中...";
+          txt.className = "text-amber-300 font-mono text-sm";
+          if (badge) badge.title = st.error || '尋找副屏中';
+        }
+      }
+    }
+
+    function startStatusPolling() {
+      if (statusTimer) clearInterval(statusTimer);
+      const checkStatus = async () => {
+        try {
+          const [res1, res2] = await Promise.all([
+            fetch('/api/status'),
+            fetch('/api/aio/status')
+          ]);
+          lastChassisStatus = await res1.json();
+          lastAioStatus = await res2.json();
+
+          const cDot = document.getElementById('tabDot-chassis');
+          const aDot = document.getElementById('tabDot-aio');
+          if (cDot) cDot.className = lastChassisStatus.connected
+            ? "w-2 h-2 rounded-full bg-emerald-400"
+            : "w-2 h-2 rounded-full bg-amber-400";
+          if (aDot) aDot.className = lastAioStatus.connected
+            ? "w-2 h-2 rounded-full bg-emerald-400"
+            : "w-2 h-2 rounded-full bg-amber-400";
+
+          const metaTag = document.getElementById('aioMetaTag');
+          if (metaTag && lastAioStatus) {
+            metaTag.textContent = lastAioStatus.uuid
+              ? `UUID: ${lastAioStatus.uuid} · ${lastAioStatus.last_kb || 0} KB`
+              : 'UUID: 未連線';
+          }
+
+          renderActiveStatusBadge();
+        } catch (e) {
+          // ignore network glitch
+        }
+      };
+
+      checkStatus();
+      statusTimer = setInterval(checkStatus, 3000);
+    }
+  </script>
+  <!-- 浮動提示通知容器 -->
+  <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+</body>
+</html>

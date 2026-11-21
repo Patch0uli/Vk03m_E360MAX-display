@@ -1,0 +1,46 @@
+{
+  "mode": "cpu_trio",
+  "canvas_bg": "#120a05",
+  "accent_primary": "#ffffff",
+  "accent_secondary": "#ffc685",
+  "accent_power": "#a855f7",
+  "text_primary": "#ffffff",
+  "text_secondary": "#ffffff",
+  "bg_image": null,
+  "bg_dim": 0.35,
+  "bg_blur": 0,
+  "rotate": 0,
+  "fps": 10.0,
+  "quality": 88,
+  "ambient_ring": false,
+  "sync_to_screen": true,
+  "widgets": [
+    {
+      "id": "w1",
+      "x": 0,
+      "y": 0,
+      "w": 2,
+      "h": 1,
+      "metric": "cpu_usage",
+      "color": "#ff772e"
+    },
+    {
+      "id": "w2",
+      "x": 0,
+      "y": 1,
+      "w": 1,
+      "h": 1,
+      "metric": "cpu_temp",
+      "color": "#ff7e29"
+    },
+    {
+      "id": "w3",
+      "x": 1,
+      "y": 1,
+      "w": 1,
+      "h": 1,
+      "metric": "cpu_power",
+      "color": "#ff1f1f"
+    }
+  ]
+}
