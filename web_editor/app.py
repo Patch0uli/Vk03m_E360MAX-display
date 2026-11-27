@@ -40,6 +40,7 @@ from examples.scifi_hud_960x360 import TelemetryProvider
 from valkyrie_lcd import ValkyriePanel
 from web_editor.aio_driver import SilverStoneAioPanel
 from web_editor.aio_renderer import DEFAULT_AIO_WIDGETS, VALID_AIO_METRICS, render_aio_480x480
+from web_editor.ambient_fx import VALID_AMBIENT_FX
 from web_editor.media_manager import media_manager
 from web_editor.renderer import render_custom_hud
 
@@ -115,7 +116,7 @@ def sanitize_theme(theme_data: dict | None) -> dict:
     res["fps"] = max(1.0, min(30.0, fps))
 
     amb_mode = str(res.get("ambient_fx", "off")).lower()
-    res["ambient_fx"] = amb_mode if amb_mode in ("waves", "particles", "dual", "off") else "off"
+    res["ambient_fx"] = amb_mode if amb_mode in VALID_AMBIENT_FX else "off"
     res["ambient_opacity"] = max(0.0, min(1.0, _float(res.get("ambient_opacity"), 0.55)))
     res["ambient_speed"] = max(0.2, min(3.0, _float(res.get("ambient_speed"), 1.0)))
 

@@ -361,18 +361,40 @@
               <span class="flex items-center space-x-1.5"><i class="fa-solid fa-wand-magic-sparkles text-sky-400"></i><span>動態流光 & 背景壁紙</span></span>
               <span id="bgStatusText" class="text-sm font-normal text-slate-400">未上傳</span>
             </h3>
-            <div class="grid grid-cols-4 gap-1.5">
-              <button onclick="setAmbientMode('waves')" id="fxBtn-waves" class="btn btn-sm text-sm btn-outline hover:btn-info text-slate-300">波浪</button>
-              <button onclick="setAmbientMode('particles')" id="fxBtn-particles" class="btn btn-sm text-sm btn-outline hover:btn-info text-slate-300">點線</button>
-              <button onclick="setAmbientMode('dual')" id="fxBtn-dual" class="btn btn-sm text-sm btn-outline hover:btn-info text-slate-300">融合</button>
-              <button onclick="setAmbientMode('off')" id="fxBtn-off" class="btn btn-sm text-sm btn-outline hover:btn-error text-slate-300">關閉</button>
+            <div class="grid grid-cols-5 gap-1.5">
+              <button onclick="setAmbientMode('waves')" id="fxBtn-waves" title="多頻柔和平滑波浪 (Waves)" class="btn btn-sm text-sm px-1 btn-outline hover:btn-info text-slate-300">波浪</button>
+              <button onclick="setAmbientMode('particles')" id="fxBtn-particles" title="科技星座連線點陣 (Constellation)" class="btn btn-sm text-sm px-1 btn-outline hover:btn-info text-slate-300">點線</button>
+              <button onclick="setAmbientMode('dual')" id="fxBtn-dual" title="波浪 + 點線雙重融合 (Dual)" class="btn btn-sm text-sm px-1 btn-outline hover:btn-info text-slate-300">融合</button>
+              <button onclick="randomAmbientMode()" id="fxBtn-random" title="隨機切換一種動態流光特效" class="btn btn-sm text-sm px-1 btn-outline hover:btn-secondary text-purple-300">隨機</button>
+              <button onclick="setAmbientMode('off')" id="fxBtn-off" title="關閉動態流光" class="btn btn-sm text-sm px-1 btn-outline hover:btn-error text-slate-300">關閉</button>
+
+              <button onclick="setAmbientMode('aurora')" id="fxBtn-aurora" title="極光幕簾 (Northern Lights)" class="btn btn-sm text-sm px-1 btn-outline hover:btn-info text-slate-300">極光</button>
+              <button onclick="setAmbientMode('plasma')" id="fxBtn-plasma" title="等離子雲 (Demoscene Plasma)" class="btn btn-sm text-sm px-1 btn-outline hover:btn-info text-slate-300">等離子</button>
+              <button onclick="setAmbientMode('metaballs')" id="fxBtn-metaballs" title="熔岩光球 (Liquid Metaballs)" class="btn btn-sm text-sm px-1 btn-outline hover:btn-info text-slate-300">光球</button>
+              <button onclick="setAmbientMode('matrix')" id="fxBtn-matrix" title="駭客代碼雨 (Matrix Rain)" class="btn btn-sm text-sm px-1 btn-outline hover:btn-info text-slate-300">代碼雨</button>
+              <button onclick="setAmbientMode('synthgrid')" id="fxBtn-synthgrid" title="賽博地平線網格 (SynthGrid)" class="btn btn-sm text-sm px-1 btn-outline hover:btn-info text-slate-300">網格</button>
+
+              <button onclick="setAmbientMode('starfield')" id="fxBtn-starfield" title="3D 星際躍遷 (Starfield Warp)" class="btn btn-sm text-sm px-1 btn-outline hover:btn-info text-slate-300">星際</button>
+              <button onclick="setAmbientMode('circuit')" id="fxBtn-circuit" title="晶片脈衝電路 (PCB Circuit)" class="btn btn-sm text-sm px-1 btn-outline hover:btn-info text-slate-300">晶片</button>
+              <button onclick="setAmbientMode('hexpulse')" id="fxBtn-hexpulse" title="科幻蜂巢脈動 (HexPulse)" class="btn btn-sm text-sm px-1 btn-outline hover:btn-info text-slate-300">蜂巢</button>
+              <button onclick="setAmbientMode('radar')" id="fxBtn-radar" title="戰術雷達掃描 (Radar Sonar)" class="btn btn-sm text-sm px-1 btn-outline hover:btn-info text-slate-300">雷達</button>
+              <button onclick="setAmbientMode('fireflies')" id="fxBtn-fireflies" title="流螢呼吸光斑 (Firefly Bokeh)" class="btn btn-sm text-sm px-1 btn-outline hover:btn-info text-slate-300">流螢</button>
             </div>
-            <div class="space-y-1">
-              <div class="flex items-center justify-between text-sm text-slate-400">
-                <span>動態流光亮度</span>
-                <span id="fxOpacityVal" class="font-mono text-sky-400">55%</span>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="space-y-1">
+                <div class="flex items-center justify-between text-sm text-slate-400">
+                  <span>流光亮度</span>
+                  <span id="fxOpacityVal" class="font-mono text-sky-400">55%</span>
+                </div>
+                <input type="range" id="fxOpacityInput" min="0" max="100" value="55" class="w-full range range-sm range-info" oninput="setAmbientOpacity(this.value)">
               </div>
-              <input type="range" id="fxOpacityInput" min="0" max="100" value="55" class="w-full range range-sm range-info" oninput="setAmbientOpacity(this.value)">
+              <div class="space-y-1">
+                <div class="flex items-center justify-between text-sm text-slate-400">
+                  <span>流光速度</span>
+                  <span id="fxSpeedVal" class="font-mono text-sky-400">1.0x</span>
+                </div>
+                <input type="range" id="fxSpeedInput" min="30" max="250" step="10" value="100" class="w-full range range-sm range-info" oninput="setAmbientSpeed(this.value)">
+              </div>
             </div>
             <div class="border border-dashed border-slate-700 hover:border-sky-400 rounded-lg p-2 text-center cursor-pointer bg-slate-900/50 hover:bg-slate-900/80 transition flex items-center justify-center space-x-2" onclick="document.getElementById('bgFileInput').click()">
               <input type="file" id="bgFileInput" accept="image/*" class="hidden" onchange="uploadBackgroundImage(this)">
@@ -1298,11 +1320,24 @@
       showToast(`已套用「${presetTitles[presetName] || presetName}」佈局`, 'success');
     }
 
-    // ── 1. 副屏實體動態流光 (LCD Screen FX) 控制 ────────────────────────────
+    // ── 1. 副屏實體動態流光 (LCD Screen FX — 13 種特效) 控制 ────────────────
+    const AMBIENT_FX_MODES = [
+      'waves', 'particles', 'dual',
+      'aurora', 'plasma', 'metaballs', 'matrix', 'synthgrid',
+      'starfield', 'circuit', 'hexpulse', 'radar', 'fireflies',
+      'off'
+    ];
+
     function setAmbientMode(mode) {
       currentConfig.ambient_fx = mode;
       updateAmbientButtonsUI(mode);
       updateTheme(false);
+    }
+
+    function randomAmbientMode() {
+      const pool = AMBIENT_FX_MODES.filter(m => m !== 'off' && m !== currentConfig.ambient_fx);
+      const next = pool[Math.floor(Math.random() * pool.length)] || 'aurora';
+      setAmbientMode(next);
     }
 
     function setAmbientOpacity(val) {
@@ -1314,14 +1349,28 @@
       }, 80);
     }
 
+    function setAmbientSpeed(val) {
+      const spd = (parseFloat(val) / 100.0);
+      document.getElementById('fxSpeedVal').textContent = `${spd.toFixed(1)}x`;
+      currentConfig.ambient_speed = spd;
+      clearTimeout(sliderDebounceTimer);
+      sliderDebounceTimer = setTimeout(() => {
+        updateTheme(false);
+      }, 80);
+    }
+
     function updateAmbientButtonsUI(mode) {
-      ['waves', 'particles', 'dual', 'off'].forEach(m => {
+      AMBIENT_FX_MODES.forEach(m => {
         const btn = document.getElementById(`fxBtn-${m}`);
         if (btn) {
           if (mode === m) {
-            btn.className = "btn btn-sm text-sm btn-info text-white flex items-center justify-center space-x-1 shadow-sm";
+            btn.className = (m === 'off')
+              ? "btn btn-sm text-sm px-1 btn-error text-white flex items-center justify-center shadow-sm"
+              : "btn btn-sm text-sm px-1 btn-info text-white flex items-center justify-center shadow-sm";
           } else {
-            btn.className = "btn btn-sm text-sm btn-outline hover:btn-info text-slate-300 flex items-center justify-center space-x-1";
+            btn.className = (m === 'off')
+              ? "btn btn-sm text-sm px-1 btn-outline hover:btn-error text-slate-300 flex items-center justify-center"
+              : "btn btn-sm text-sm px-1 btn-outline hover:btn-info text-slate-300 flex items-center justify-center";
           }
         }
       });
@@ -1358,6 +1407,13 @@
       const fxOp = Math.round((cfg.ambient_opacity !== undefined ? cfg.ambient_opacity : 0.55) * 100);
       document.getElementById('fxOpacityInput').value = fxOp;
       document.getElementById('fxOpacityVal').textContent = `${fxOp}%`;
+
+      const fxSpd = cfg.ambient_speed !== undefined ? parseFloat(cfg.ambient_speed) : 1.0;
+      const fxSpdEl = document.getElementById('fxSpeedInput');
+      if (fxSpdEl) {
+        fxSpdEl.value = Math.round(fxSpd * 100);
+        document.getElementById('fxSpeedVal').textContent = `${fxSpd.toFixed(1)}x`;
+      }
 
       document.getElementById('canvasBgInput').value = cfg.canvas_bg || '#120a05';
       document.getElementById('canvasBgVal').textContent = cfg.canvas_bg || '#120a05';
@@ -1432,6 +1488,8 @@
       const rot = parseInt(document.getElementById('rotateSelect').value, 10);
       const fps = parseFloat(document.getElementById('fpsSelect').value);
       const fxOp = parseFloat(document.getElementById('fxOpacityInput').value);
+      const fxSpdEl = document.getElementById('fxSpeedInput');
+      const fxSpd = fxSpdEl ? parseFloat(fxSpdEl.value) : NaN;
 
       const getVal = (id, fallbackKey, fallbackDef) => {
         const el = document.getElementById(id);
@@ -1443,6 +1501,7 @@
         ...currentConfig,
         ambient_fx: currentConfig.ambient_fx || 'off',
         ambient_opacity: isNaN(fxOp) ? (currentConfig.ambient_opacity ?? 0.55) : fxOp / 100.0,
+        ambient_speed: isNaN(fxSpd) ? (currentConfig.ambient_speed ?? 1.0) : fxSpd / 100.0,
         canvas_bg: getVal('canvasBgInput', 'canvas_bg', '#120a05'),
         card_bg: getVal('cardBgInput', 'card_bg', '#241208'),
         card_opacity: isNaN(cardOp) ? (currentConfig.card_opacity ?? 0.85) : cardOp / 100.0,

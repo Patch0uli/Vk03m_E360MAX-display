@@ -19,6 +19,8 @@ import time
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageOps
 
+from web_editor.ambient_fx import render_ambient_fx
+
 FONT_PATHS = [
     r"C:\Windows\Fonts\bahnschrift.ttf",
     r"C:\Windows\Fonts\arialbd.ttf",
@@ -212,70 +214,19 @@ def render_custom_hud(data: dict, theme: dict) -> Image.Image:
     else:
         base_bg = Image.new("RGBA", (w, h), (*canvas_bg_rgb, 255))
 
-    # 2.5 Dynamic Ambient FX directly on Screen Canvas (Waves & Particles)
+    # 2.5 Dynamic Ambient FX directly on Screen Canvas (13 procedural effects)
     ambient_mode = str(theme.get("ambient_fx", "dual")).lower()
     ambient_opacity = max(0.0, min(1.0, safe_float(theme.get("ambient_opacity"), 0.55)))
     ambient_speed = max(0.2, min(3.0, safe_float(theme.get("ambient_speed"), 1.0)))
 
     if ambient_mode != "off" and ambient_opacity > 0.02:
         t = time.time() * ambient_speed
-        fx_layer = Image.new("RGBA", (w, h), (0, 0, 0, 0))
-        fd = ImageDraw.Draw(fx_layer)
-
-        # Flowing Multi-Frequency Sine Waves (gentle amplitude & speed for silky-smooth 15 FPS)
-        if ambient_mode in ("waves", "dual"):
-            pts1 = [(0, h)]
-            for x in range(0, w + 12, 12):
-                y = 272 + 14 * math.sin(0.0060 * x + t * 0.42) + 5 * math.cos(0.011 * x - t * 0.24)
-                pts1.append((x, y))
-            pts1.append((w, h))
-            fd.polygon(pts1, fill=(*cpu_accent_rgb, int(255 * 0.16 * ambient_opacity)))
-            for i in range(len(pts1) - 3):
-                fd.line([pts1[i+1], pts1[i+2]], fill=(*cpu_accent_rgb, int(255 * 0.75 * ambient_opacity)), width=2)
-
-            pts2 = [(0, h)]
-            for x in range(0, w + 12, 12):
-                y = 290 + 11 * math.sin(0.0075 * x - t * 0.34 + 1.4) + 4 * math.cos(0.005 * x + t * 0.18)
-                pts2.append((x, y))
-            pts2.append((w, h))
-            fd.polygon(pts2, fill=(*ram_accent_rgb, int(255 * 0.14 * ambient_opacity)))
-            for i in range(len(pts2) - 3):
-                fd.line([pts2[i+1], pts2[i+2]], fill=(*ram_accent_rgb, int(255 * 0.65 * ambient_opacity)), width=2)
-
-            pts3 = [(0, h)]
-            for x in range(0, w + 12, 12):
-                y = 310 + 9 * math.sin(0.0095 * x + t * 0.48 + 2.8)
-                pts3.append((x, y))
-            pts3.append((w, h))
-            fd.polygon(pts3, fill=(*gpu_accent_rgb, int(255 * 0.18 * ambient_opacity)))
-            for i in range(len(pts3) - 3):
-                fd.line([pts3[i+1], pts3[i+2]], fill=(*gpu_accent_rgb, int(255 * 0.80 * ambient_opacity)), width=2)
-
-        # Cybernetic Constellation Particles
-        if ambient_mode in ("particles", "dual"):
-            p_coords = []
-            num_nodes = 30
-            for i in range(num_nodes):
-                speed_x = 18.0 if i % 2 == 0 else -14.0
-                speed_y = 12.0 if i % 3 == 0 else -10.0
-                px = (i * 32.0 + t * speed_x) % w
-                py = (i * 19.0 + t * speed_y) % h
-                p_coords.append((px, py))
-
-            max_d = 115.0
-            for i in range(num_nodes):
-                for j in range(i + 1, num_nodes):
-                    dist = math.hypot(p_coords[i][0] - p_coords[j][0], p_coords[i][1] - p_coords[j][1])
-                    if dist < max_d:
-                        line_alpha = int(255 * (1.0 - dist / max_d) * 0.35 * ambient_opacity)
-                        fd.line([p_coords[i], p_coords[j]], fill=(*cpu_accent_rgb, line_alpha), width=1)
-
-            for i, (px, py) in enumerate(p_coords):
-                node_col = cpu_accent_rgb if i % 2 == 0 else ram_accent_rgb
-                r = 2 if i % 3 == 0 else 1.5
-                fd.ellipse((px - r, py - r, px + r, py + r), fill=(*node_col, int(255 * 0.85 * ambient_opacity)))
-
-        base_bg = Image.alpha_composite(base_bg, fx_layer)
+        fx_layer = render_ambient_fx(
+            ambient_mode, w, h, t, ambient_opacity,
+            cpu_accent_rgb, ram_accent_rgb, gpu_accent_rgb,
+        )
+        if fx_layer is not None:
+            base_bg = Image.alpha_composite(base_bg, fx_layer)
 
     # 3. Floating Transparent Cards Layer
     card_layer = Image.new("RGBA", (w, h), (0, 0, 0, 0))
@@ -512,7 +463,7 @@ def render_custom_hud(data: dict, theme: dict) -> Image.Image:
         bx1, by1, bx2 = wl["bx1"], wl["by1"], wl["bx2"]
 
         if wid == "cpu":
-            cpu_name = str(telemetry.get("cpu_name") or "CPU")
+            cpu_name = str(data.get("cpu_name") or "CPU")
             d.text((x1 + 18, y1 + 14), "CPU MONITOR", fill=(*cpu_accent_rgb, 255), font=get_font(14))
             d.text((x2 - 18, y1 + 15), cpu_name, fill=(*text_secondary_rgb, 200), font=get_font(11), anchor="ra")
             d.text((x1 + 126, y1 + 52), "CPU USAGE", fill=(*text_secondary_rgb, 255), font=get_font(12))
