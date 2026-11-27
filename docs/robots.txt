@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://patch0uli.github.io/Vk03m_E360MAX-display/sitemap.xml

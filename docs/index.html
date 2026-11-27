@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Valkyrie VK03M (VK03-M) &amp; SilverStone E360MAX (E360 MAX) 雙屏副屏 Web Studio — 開源監控與視覺編輯台</title>
+  <meta name="description" content="開源 Windows 雙屏硬體監控與視覺化 Web 編輯台，完整支援瓦爾基里（瓦尔基里）Valkyrie VK03M / VK03-M 機箱 LCD 副屏（960x360, MS9132）與銀欣（银欣）SilverStone E360MAX / E360 MAX 水冷頭副屏（480x480, HWCX HID），內建 13 種動態背景特效、中文音樂卡片、Win11 CPU 溫度瓦數感測與開機靜默自啟動，可替代 Myth.Cool 與 ICENODE。" />
+  <meta name="keywords" content="Valkyrie VK03M, VK03-M, 瓦爾基里 副屏, 瓦尔基里 机箱副屏, SilverStone E360MAX, E360 MAX, 銀欣 水冷螢幕, 银欣 水冷屏, MS9132, HWCX HID, Myth.Cool 替代, ICENODE, 機箱副屏 監控, Python LCD Studio" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://patch0uli.github.io/Vk03m_E360MAX-display/" />
+
+  <!-- Google Search Console 驗證用：若採用 HTML 標記驗證，把 <meta name="google-site-verification" ...> 貼在這一行下方 -->
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="zh_TW" />
+  <meta property="og:title" content="Valkyrie VK03M (VK03-M) &amp; SilverStone E360MAX Dual Display Studio" />
+  <meta property="og:description" content="瓦爾基里 VK03M 機箱副屏（960×360 MS9132）與銀欣 E360MAX 水冷頭螢幕（480×480 HID）開源雙屏 Web 視覺編輯台與即時硬體監控。" />
+  <meta property="og:url" content="https://patch0uli.github.io/Vk03m_E360MAX-display/" />
+  <meta property="og:image" content="https://raw.githubusercontent.com/Patch0uli/Vk03m_E360MAX-display/main/assets/studio_vk03m_960x360.jpg" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Valkyrie VK03M &amp; SilverStone E360MAX Dual Display Studio" />
+  <meta name="twitter:description" content="開源雙屏 LCD Web 編輯台：支援瓦爾基里 VK03M / VK03-M（MS9132）與銀欣 E360MAX（HID），含 13 種動態背景特效與開機靜默自啟動。" />
+  <meta name="twitter:image" content="https://raw.githubusercontent.com/Patch0uli/Vk03m_E360MAX-display/main/assets/studio_vk03m_960x360.jpg" />
+
+  <!-- Structured Data (JSON-LD) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Valkyrie VK03M & SilverStone E360MAX Dual Display Studio",
+    "alternateName": ["VK03-M Dual Display Studio", "瓦爾基里 VK03M 與銀欣 E360MAX 雙屏編輯台"],
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Windows 10, Windows 11",
+    "url": "https://patch0uli.github.io/Vk03m_E360MAX-display/",
+    "codeRepository": "https://github.com/Patch0uli/Vk03m_E360MAX-display",
+    "sameAs": "https://github.com/Patch0uli/Vk03m_E360MAX-display",
+    "license": "https://opensource.org/licenses/MIT",
+    "description": "Open-source dual-screen LCD Web Studio for Valkyrie VK03M (VK03-M, 960x360 MS9132) and SilverStone E360MAX (E360 MAX, 480x480 HWCX HID) with 13 procedural ambient FX, Windows 11 CPU temperature/wattage sensors, Chinese media card, and UAC-free autostart.",
+    "image": [
+      "https://raw.githubusercontent.com/Patch0uli/Vk03m_E360MAX-display/main/assets/studio_vk03m_960x360.jpg",
+      "https://raw.githubusercontent.com/Patch0uli/Vk03m_E360MAX-display/main/assets/studio_e360max_480x480.jpg"
+    ],
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
+  }
+  </script>
+
+  <style>
+    :root {
+      --bg: #070b14;
+      --surface: #0f1626;
+      --surface-2: #151f36;
+      --border: #24324f;
+      --text: #e6eefc;
+      --muted: #99accb;
+      --cyan: #38bdf8;
+      --violet: #a78bfa;
+      --emerald: #34d399;
+      --amber: #fbbf24;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Microsoft JhengHei", "PingFang TC", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at 15% 10%, rgba(56, 189, 248, 0.14), transparent 40%),
+                  radial-gradient(circle at 85% 15%, rgba(167, 139, 250, 0.12), transparent 40%),
+                  var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+    a { color: var(--cyan); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .container { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
+
+    header.hero {
+      padding: 64px 0 44px;
+      border-bottom: 1px solid var(--border);
+    }
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      color: var(--cyan);
+    }
+    .badge.violet {
+      background: rgba(167, 139, 250, 0.12);
+      border-color: rgba(167, 139, 250, 0.35);
+      color: var(--violet);
+    }
+    .badge.emerald {
+      background: rgba(52, 211, 153, 0.12);
+      border-color: rgba(52, 211, 153, 0.35);
+      color: var(--emerald);
+    }
+    h1 {
+      margin: 0 0 14px;
+      font-size: clamp(28px, 4vw, 44px);
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+    }
+    .subtitle {
+      color: var(--muted);
+      font-size: 17px;
+      max-width: 860px;
+      margin: 0 0 28px;
+    }
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 22px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 15px;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+    .btn:hover { text-decoration: none; transform: translateY(-1px); opacity: 0.95; }
+    .btn-primary {
+      background: linear-gradient(135deg, #0ea5e9, #6366f1);
+      color: #ffffff;
+    }
+    .btn-secondary {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    section { padding: 48px 0; border-bottom: 1px solid rgba(36, 50, 79, 0.65); }
+    h2 {
+      margin: 0 0 20px;
+      font-size: 26px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    h3 { margin: 0 0 10px; font-size: 18px; color: #f1f5ff; }
+
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+    }
+    .preview-card img {
+      width: 100%;
+      height: auto;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      margin-top: 12px;
+      display: block;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+    }
+    .card p { margin: 0; color: var(--muted); font-size: 15px; }
+
+    .fx-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .fx-pill {
+      padding: 5px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      font-size: 14px;
+    }
+    th, td {
+      padding: 13px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    th { background: var(--surface-2); color: #dce8ff; font-weight: 600; }
+    td { color: var(--muted); }
+    tr:last-child td { border-bottom: none; }
+
+    pre {
+      background: #050810;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      overflow-x: auto;
+      color: #cfe4ff;
+      font-size: 14px;
+    }
+    code {
+      font-family: Consolas, "Cascadia Code", monospace;
+      background: rgba(56, 189, 248, 0.1);
+      padding: 2px 6px;
+      border-radius: 5px;
+      color: #93dcff;
+      font-size: 0.92em;
+    }
+    pre code { background: none; padding: 0; color: inherit; }
+
+    .warn {
+      background: rgba(251, 191, 36, 0.08);
+      border: 1px solid rgba(251, 191, 36, 0.35);
+      border-radius: 12px;
+      padding: 16px 20px;
+      color: #fde68a;
+      font-size: 14px;
+    }
+
+    footer {
+      padding: 36px 0 48px;
+      color: var(--muted);
+      font-size: 14px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="container">
+      <div class="badge-row">
+        <span class="badge">Valkyrie VK03M / VK03-M (960×360 MS9132)</span>
+        <span class="badge violet">SilverStone E360MAX / E360 MAX (480×480 HID)</span>
+        <span class="badge emerald">MIT Open Source · Windows 10 / 11</span>
+      </div>
+      <h1>VK03M &amp; SilverStone E360MAX Dual Display Studio</h1>
+      <p class="subtitle">
+        專為 <strong>瓦爾基里（瓦尔基里）Valkyrie VK03M / VK03-M 機箱長條副屏</strong> 與
+        <strong>銀欣（银欣）SilverStone E360MAX / E360 MAX 水冷頭方形副屏</strong> 打造的開源雙屏即時監控與
+        Web 視覺化編輯台（<code>http://localhost:5050</code>），可替代官方 Myth.Cool 與 ICENODE 常駐軟體，支援模組化拖曳排版、13 種動態背景特效、中文音樂卡片與開機免 UAC 靜默自啟動。
+      </p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="https://github.com/Patch0uli/Vk03m_E360MAX-display" target="_blank" rel="noopener">
+          前往 GitHub 專案原始碼
+        </a>
+        <a class="btn btn-secondary" href="https://github.com/Patch0uli/Vk03m_E360MAX-display/blob/main/README.md" target="_blank" rel="noopener">
+          完整 README 安裝說明
+        </a>
+        <a class="btn btn-secondary" href="https://github.com/Patch0uli/Vk03m_E360MAX-display/issues" target="_blank" rel="noopener">
+          問題回報 / 討論
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section id="previews">
+      <h2>介面實機預覽</h2>
+      <div class="preview-grid">
+        <article class="card preview-card">
+          <h3>1. 瓦爾基里 VK03M / VK03-M 機箱副屏（960×360）</h3>
+          <p>3 欄 GridStack 模組化卡片、內嵌配色器、中文歌名播放卡片與 13 種程序式動態背景特效。</p>
+          <img
+            src="https://raw.githubusercontent.com/Patch0uli/Vk03m_E360MAX-display/main/assets/studio_vk03m_960x360.jpg"
+            alt="瓦爾基里 Valkyrie VK03M VK03-M 960x360 機箱副屏 Web Studio 視覺編輯介面"
+            loading="lazy"
+          />
+        </article>
+        <article class="card preview-card">
+          <h3>2. 銀欣 E360MAX / E360 MAX 水冷頭（480×480）</h3>
+          <p>原生 Windows HID 免換驅動推流，支援 2×2 自由合併區塊與左右虛線指向編輯台。</p>
+          <img
+            src="https://raw.githubusercontent.com/Patch0uli/Vk03m_E360MAX-display/main/assets/studio_e360max_480x480.jpg"
+            alt="銀欣 SilverStone E360MAX E360 MAX 480x480 水冷螢幕 Web Studio 2x2 編輯介面"
+            loading="lazy"
+          />
+        </article>
+      </div>
+    </section>
+
+    <section id="features">
+      <h2>核心功能特色</h2>
+      <div class="feature-grid">
+        <div class="card">
+          <h3>雙螢幕同步即時推流</h3>
+          <p>同一份瀏覽器編輯介面（<code>localhost:5050</code>）獨立控制機箱 960×360（MS9132）與水冷頭 480×480（HWCX HID），關閉分頁自動省電跳過網頁端預覽壓縮。</p>
+        </div>
+        <div class="card">
+          <h3>13 種程序式動態背景特效</h3>
+          <p>模組化 <code>ambient_fx.py</code> 引擎，針對副屏刷新率最佳化，支援透明度與流速微調，亦可疊加自訂背景桌布。</p>
+        </div>
+        <div class="card">
+          <h3>Windows 11 CPU 溫度與瓦數</h3>
+          <p>整合 <code>LibreHardwareMonitorLib.dll</code> 與 WHQL 簽章 <code>HardwareHelp64.dll</code>，即使開啟 Win11 核心隔離（HVCI）仍可穩定讀值。</p>
+        </div>
+        <div class="card">
+          <h3>中文音樂卡與按需休眠</h3>
+          <p>透過 Windows GSMTC 抓取 Spotify / 瀏覽器曲目與封面，使用微軟正黑體精準截斷不亂碼；未放音樂卡時輪詢自動休眠。</p>
+        </div>
+        <div class="card">
+          <h3>防碰撞保護與免 UAC 自啟動</h3>
+          <p>自動偵測 <code>MythCool.exe</code> 避免搶佔 USB 介面；提供 <code>install_autostart.bat</code> 一鍵設定 Windows 工作排程靜默管理員啟動。</p>
+        </div>
+        <div class="card">
+          <h3>開源透明與單元測試</h3>
+          <p>基於 <a href="https://github.com/hogancv/valkyrie-240-lcd" target="_blank" rel="noopener">hogancv/valkyrie-240-lcd</a> 擴展，內含 MS9132 協議與渲染單元測試，無接硬體亦可驗證。</p>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 18px;">
+        <h3>內建 13 種動態背景特效列表（VK03M 960×360）</h3>
+        <div class="fx-list">
+          <span class="fx-pill">波浪 Waves</span>
+          <span class="fx-pill">星座點線 Constellation</span>
+          <span class="fx-pill">雙重融合 Dual</span>
+          <span class="fx-pill">極光幕簾 Aurora</span>
+          <span class="fx-pill">等離子雲 Plasma</span>
+          <span class="fx-pill">熔岩光球 Metaballs</span>
+          <span class="fx-pill">駭客代碼雨 Matrix Rain</span>
+          <span class="fx-pill">賽博網格 SynthGrid</span>
+          <span class="fx-pill">星際躍遷 Starfield</span>
+          <span class="fx-pill">晶片脈衝 Circuit</span>
+          <span class="fx-pill">蜂巢脈動 HexPulse</span>
+          <span class="fx-pill">雷達掃描 Radar</span>
+          <span class="fx-pill">流螢光斑 Fireflies</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="hardware">
+      <h2>支援硬體規格</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>裝置名稱</th>
+            <th>解析度與像素格式</th>
+            <th>通訊介面</th>
+            <th>驅動需求</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>瓦爾基里 Valkyrie VK03M / VK03-M 機箱副屏</strong></td>
+            <td>360×960（橫置 960×360，VIC=160，YUV422）</td>
+            <td><code>VID_345F / PID_9132</code>（MI_00 HID + MI_03 Bulk）</td>
+            <td>MI_03 以 Zadig 綁定 <code>libusb-win32</code></td>
+          </tr>
+          <tr>
+            <td><strong>銀欣 SilverStone E360MAX / E360 MAX 水冷頭</strong></td>
+            <td>480×480 正方形（JPEG 串流）</td>
+            <td><code>VID_0145 / PID_3002</code>（Windows HID）</td>
+            <td>免換驅動（搭配 <code>LcdComm.dll</code>）</td>
+          </tr>
+          <tr>
+            <td><strong>瓦爾基里 240×240 水冷副屏</strong></td>
+            <td>240×240（VIC=156，YUV422）</td>
+            <td><code>VID_345F / PID_9132</code></td>
+            <td>同 VK03M（繼承上游完整支援）</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="quickstart">
+      <h2>快速安裝與啟動（Windows）</h2>
+      <pre><code>git clone https://github.com/Patch0uli/Vk03m_E360MAX-display.git
+cd Vk03m_E360MAX-display
+pip install -r requirements.txt
+python tools/doctor.py
+
+# 手動啟動（或直接右鍵以系統管理員身分執行 install_autostart.bat 設定開機自啟動）
+python web_editor/app.py</code></pre>
+      <p style="color: var(--muted);">
+        啟動後開啟瀏覽器前往 <code>http://localhost:5050</code> 即可即時編輯雙螢幕。詳細硬體踩坑與協議說明請見 GitHub 專案中的
+        <a href="https://github.com/Patch0uli/Vk03m_E360MAX-display/blob/main/docs/PROTOCOL.md" target="_blank" rel="noopener">PROTOCOL.md</a> 與
+        <a href="https://github.com/Patch0uli/Vk03m_E360MAX-display/blob/main/docs/PITFALLS.md" target="_blank" rel="noopener">PITFALLS.md</a>。
+      </p>
+      <div class="warn">
+        <strong>MS9132 硬體提醒：</strong>絕對不要對 MS9132 裝置呼叫 USB Bus Reset（<code>usb.core.Device.reset()</code>），否則會導致韌體鎖死出現 <code>VID_0000&amp;PID_0005</code>。若不慎卡死，請以系統管理員身分執行 <code>fix_usb.bat</code> 或徹底切斷電源 30 秒放電。
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>
+        MIT License · GitHub Repository:
+        <a href="https://github.com/Patch0uli/Vk03m_E360MAX-display" target="_blank" rel="noopener">Patch0uli/Vk03m_E360MAX-display</a>
+      </p>
+      <p>非官方開源專案，與 Valkyrie（瓦爾基里）／Myth.Cool／MacroSilicon／SilverStone（銀欣）無官方關聯。</p>
+    </div>
+  </footer>
+</body>
+</html>

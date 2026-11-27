@@ -1,6 +1,8 @@
-# VK03M & SilverStone E360MAX Dual Display Studio
+# Valkyrie VK03M (VK03-M) & SilverStone E360MAX (E360 MAX) Dual Display Studio
 
-> **本專案基於開源專案 [hogancv/valkyrie-240-lcd](https://github.com/hogancv/valkyrie-240-lcd) 修改與擴展製作**，完整支援 **瓦爾基里（Valkyrie）VK03M 機箱副屏（物理 360×960 / 橫向 960×360，MS9132，VIC=160）** 與 **銀欣（SilverStone）E360MAX 水冷頭方形副屏（480×480，HWCX HID）** 雙螢幕同步即時推流，並內建滿版無側邊欄的 **Web 視覺化雙屏編輯台（Web Studio）**、模組化儀表板、中文音樂播放卡片、Windows 11 CPU 溫度／瓦數感測器整合，以及開機靜默管理員自啟動腳本。
+> 🌐 **專案介紹頁（GitHub Pages）**：[https://patch0uli.github.io/Vk03m_E360MAX-display/](https://patch0uli.github.io/Vk03m_E360MAX-display/)
+>
+> **本專案基於開源專案 [hogancv/valkyrie-240-lcd](https://github.com/hogancv/valkyrie-240-lcd) 修改與擴展製作**，完整支援 **瓦爾基里／瓦尔基里（Valkyrie）VK03M（VK03-M）機箱 LCD 副屏（物理 360×960 / 橫向 960×360，MS9132，VIC=160）** 與 **銀欣／银欣（SilverStone）E360MAX（E360 MAX）水冷頭方形副屏（480×480，HWCX HID）** 雙螢幕同步即時推流，可替代官方 Myth.Cool 與 ICENODE 軟體，並內建滿版無側邊欄的 **Web 視覺化雙屏編輯台（Web Studio）**、模組化硬體監控儀表板、13 種程序式動態背景特效、中文音樂播放卡片、Windows 11 CPU 溫度／瓦數感測器整合，以及開機靜默管理員自啟動腳本。
 
 ---
 
@@ -20,7 +22,7 @@
   - **Tab 1 — 機箱副屏 `960×360`（MS9132）**：
     - 修正 `valkyrie_lcd/protocol.py` 幀頭 `frame_header()` 為標準 12-bit 封裝（`FF 00 00 00 00 16 83 C0`），實機點亮 VK03M 機箱長條副屏（`VIC=160`，YUV422）。
     - 支援 **3 欄 GridStack 模組化卡片排版**（CPU、GPU、記憶體、網路流量、音樂播放卡），卡片內直接內嵌顏色選擇器，可自由切換 1 欄（小卡）／2 欄（中卡）／3 欄（滿版大卡）與常用佈局預設。
-    - 內建針對 15 FPS 最佳化的 **實體動態背景流光（柔和平滑波浪 / 科技點線 / 雙重融合）** 與背景桌布上傳（含霧化與壓暗調整）。
+    - 內建模組化 **13 種程序式動態背景特效**（`web_editor/ambient_fx.py`：柔和平滑波浪、星座點線、雙重融合、極光幕簾 Aurora、等離子雲 Plasma、熔岩光球 Metaballs、駭客代碼雨 Matrix Rain、賽博網格 SynthGrid、星際躍遷 Starfield、晶片脈衝 Circuit、蜂巢脈動 HexPulse、雷達掃描 Radar、流螢光斑 Fireflies），並支援透明強度／速度調整與背景桌布上傳（含霧化與壓暗）。
     - **中文歌曲完整顯示**：音樂卡片自動載入系統微軟正黑體（`msyhbd.ttc` / `msyh.ttc`）並依像素寬度精準截斷，徹底解決中文歌名／歌手亂碼與出框問題。
   - **Tab 2 — 銀欣 E360MAX 水冷頭 `480×480`（HWCX HID）**：
     - 透過原生 Windows HID（`VID=0145 / PID=3002`，搭配 `LcdComm.dll`）直接推流 480×480 JPEG（Quality 90 單幀約 14 ms，無需更換 `libusb` 驅動）。
@@ -108,7 +110,8 @@ python -m unittest discover -s tests -v
 ├── valkyrie_lcd/                  # MS9132 雙通道驅動與協議核心（改自 hogancv/valkyrie-240-lcd）
 ├── web_editor/                    # 雙屏 Web Studio 視覺化編輯器與推流後端
 │   ├── app.py                     # Flask 伺服器、雙屏推流排程、MythCool 防碰撞保護
-│   ├── renderer.py                # 960x360 機箱副屏 HUD 卡片、中文音樂卡與動態流光引擎
+│   ├── renderer.py                # 960x360 機箱副屏 HUD 卡片、中文音樂卡渲染引擎
+│   ├── ambient_fx.py              # 13 種程序式動態背景流光特效引擎（Waves / Aurora / Plasma / Matrix 等）
 │   ├── aio_driver.py              # 銀欣 E360MAX 480x480 水冷頭原生 HID 驅動（封裝 LcdComm.dll）
 │   ├── aio_renderer.py            # 銀欣 E360MAX 480x480 頂部時鐘條 + 動態 2×2 模組化渲染引擎
 │   ├── media_manager.py           # Windows GSMTC 媒體播放監控（支援自動休眠節能）
@@ -122,7 +125,7 @@ python -m unittest discover -s tests -v
 ├── uninstall_autostart.bat        # 移除開機自啟動腳本
 ├── run_studio.bat                 # Windows 手動啟動 Web Studio
 ├── fix_usb.bat                    # MS9132 異常卡死時的系統管理員 USB 重設輔助腳本
-├── docs/                          # 上游協議說明（PROTOCOL.md）與實機踩坑記錄（PITFALLS.md）
+├── docs/                          # GitHub Pages 專案介紹頁（index.html / sitemap.xml）、協議說明（PROTOCOL.md）與踩坑記錄（PITFALLS.md）
 └── tests/                         # 協議常量與渲染單元測試
 ```
 
