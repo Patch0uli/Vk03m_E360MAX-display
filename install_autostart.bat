@@ -39,12 +39,7 @@ schtasks /end /tn "ValkyrieDisplayStudio" >nul 2>&1
 timeout /t 1 /nobreak >nul
 
 echo [1/2] Registering Windows Scheduled Task "ValkyrieDisplayStudio"...
-powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-  "$action = New-ScheduledTaskAction -Execute '%PYTHONW%' -Argument '\"%APP_PY%\"' -WorkingDirectory '%PROJECT_DIR%'; ^
-   $trigger = New-ScheduledTaskTrigger -AtLogOn -User '%USERNAME%'; ^
-   $principal = New-ScheduledTaskPrincipal -UserId '%USERNAME%' -LogonType Interactive -RunLevel Highest; ^
-   $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit ([TimeSpan]::Zero) -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1); ^
-   Register-ScheduledTask -TaskName 'ValkyrieDisplayStudio' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force | Out-Null"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference = 'Stop'; $action = New-ScheduledTaskAction -Execute $env:PYTHONW -Argument ([char]34 + $env:APP_PY + [char]34) -WorkingDirectory $env:PROJECT_DIR; $trigger = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME; $principal = New-ScheduledTaskPrincipal -UserId $env:USERNAME -LogonType Interactive -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit ([TimeSpan]::Zero) -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1); Register-ScheduledTask -TaskName 'ValkyrieDisplayStudio' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force | Out-Null"
 
 if errorlevel 1 (
     echo [ERROR] Failed to register Scheduled Task!
